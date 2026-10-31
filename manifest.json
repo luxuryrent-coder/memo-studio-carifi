@@ -1,0 +1,21 @@
+{
+  "name": "Memo Studio Carifi Commercialista",
+  "short_name": "Studio Carifi",
+  "description": "Sistema gestionale di promemoria, appuntamenti e scadenzario rateizzi fiscali in tempo reale per lo Studio Carifi Commercialista.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "it-IT",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

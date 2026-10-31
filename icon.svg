@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#172554" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <rect x="28" y="28" width="456" height="456" rx="92" fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-opacity="0.5" />
+  <!-- Monogram SC -->
+  <text x="256" y="295" font-family="Georgia, serif" font-size="190" font-weight="bold" fill="url(#goldGrad)" text-anchor="middle" letter-spacing="-6">SC</text>
+  <!-- Subtitle bar -->
+  <rect x="116" y="345" width="280" height="4" rx="2" fill="url(#goldGrad)" opacity="0.8" />
+  <text x="256" y="395" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#f8fafc" text-anchor="middle" letter-spacing="8">STUDIO CARIFI</text>
+  <!-- Notification Bell Badge -->
+  <circle cx="400" cy="112" r="44" fill="#ef4444" stroke="#0f172a" stroke-width="8" />
+  <path d="M400 88a16 16 0 0 0-16 16v10c0 4-2 8-5 10l-3 2h48l-3-2c-3-2-5-6-5-10v-10a16 16 0 0 0-16-16zm-6 44a6 6 0 0 0 12 0h-12z" fill="#ffffff" />
+</svg>

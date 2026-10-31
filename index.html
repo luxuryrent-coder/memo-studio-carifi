@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Memo Studio Carifi Commercialista — Agenda & Scadenzario Rateizzi</title>
+  <meta name="description" content="Sistema di promemoria in tempo reale per appuntamenti e rateizzi fiscali dello Studio Carifi Commercialista" />
+  
+  <!-- Configurazione PWA per Windows e iOS (iPhone/iPad) -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Studio Carifi" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+
+  <!-- Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            carifi: {
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#1e3a8a',
+              600: '#2563eb',
+              gold: '#d97706',
+              goldLight: '#fbbf24'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Lucide Icons & Supabase Client per Sincronizzazione Realtime -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- HEADER PRINCIPALE DELLO STUDIO -->
+  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30 border-b border-amber-500/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        
+        <!-- Logo e Titolo Studio -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md text-slate-950 font-extrabold text-lg tracking-tighter shrink-0">
+              SC
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">Studio Carifi Commercialista</h1>
+                <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-pointer" onclick="openSettingsModal()" title="Clicca per configurare la sincronizzazione Cloud PC/iPhone">
+                  <span id="syncDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span id="syncStatusText">Sincronizzato</span>
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                <span>Agenda Appuntamenti & Scadenzario Rateizzi</span>
+                <span class="hidden sm:inline">•</span>
+                <span id="liveClock" class="font-mono text-amber-400 font-medium"></span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Pulsante Impostazioni su Mobile -->
+          <button onclick="openSettingsModal()" class="md:hidden p-2 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700" title="Impostazioni Sincronizzazione e Notifiche">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Azioni Rapide Header -->
+        <div class="flex flex-wrap items-center gap-2 no-print">
+          <button id="btnPermissionNotice" onclick="requestBrowserNotifications()" class="hidden items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-400 transition shadow-sm">
+            <i data-lucide="bell-ring" class="w-4 h-4"></i>
+            <span>Attiva Notifiche Dispositivo</span>
+          </button>
+
+          <button onclick="triggerTestNotification()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Prova subito suono e notifica push">
+            <i data-lucide="volume-2" class="w-4 h-4 text-amber-400"></i>
+            <span>Test Avviso</span>
+          </button>
+
+          <button onclick="openInstallmentPlanModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-sm">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+            <span>Genera Piano Rate</span>
+          </button>
+
+          <button onclick="openItemModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 transition shadow-md">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Nuovo Memo / Rata</span>
+          </button>
+
+          <button onclick="openSettingsModal()" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Sincronizzazione Cloud iOS/Windows e Notifiche">
+            <i data-lucide="cloud-cog" class="w-4 h-4 text-sky-400"></i>
+            <span>Cloud & iOS</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- BANNER ALLARME ATTIVO (Compare quando ci sono notifiche scadute/in corso non ancora confermate) -->
+  <div id="activeAlarmBanner" class="hidden bg-red-600 text-white border-b-2 border-red-800 shadow-lg no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex items-start sm:items-center gap-3">
+        <div class="p-2 rounded-full bg-white/20 shrink-0">
+          <i data-lucide="bell-ring" class="w-6 h-6 animate-bell text-white"></i>
+        </div>
+        <div>
+          <h2 class="text-sm sm:text-base font-extrabold uppercase tracking-wide flex items-center gap-2">
+            <span>Allarme Studio Attivo — Richiesta Conferma!</span>
+            <span id="activeAlarmCountBadge" class="px-2 py-0.5 text-xs rounded-full bg-white text-red-700 font-bold">1</span>
+          </h2>
+          <p id="activeAlarmDescription" class="text-xs sm:text-sm text-red-100 mt-0.5">
+            Ci sono scadenze o appuntamenti che hanno raggiunto l'orario di avviso e richiedono la tua presa in carico.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="snoozeAllActiveAlarms(15)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-800 hover:bg-red-900 text-white border border-red-400/40 transition">
+          Posponi 15 min
+        </button>
+        <button onclick="acknowledgeAllActiveAlarms()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-red-700 hover:bg-red-50 shadow transition">
+          Conferma Presa in Carico
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENUTO PRINCIPALE -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- RIEPILOGO KPI STUDIO CARIFI -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <!-- Card 1: Scadenze Oggi & Scadute -->
+      <div onclick="setQuickFilter('urgent')" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:border-red-400 transition cursor-pointer">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Oggi / Scaduti</span>
+          <span class="p-2 rounded-lg bg-red-50 text-red-600">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          </span>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="kpiDueToday" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+          <span class="text-xs text-red-600 font-medium">priorità immediata</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Avvisi ad Alta Intensità -->
+      <div onclick="setQuickFilter('high_intensity')" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:border-amber-400 transition cursor-pointer">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Allarmi Insistenti</span>
+          <span class="p-2 rounded-lg bg-amber-50 text-amber-600">
+            <i data-lucide="flame" class="w-5 h-5"></i>
+          </span>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="kpiHighIntensity" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+          <span class="text-xs text-amber-700 font-medium">notifica continua</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Rateizzi & F24 Attivi -->
+      <div onclick="setQuickFilter('rateizzo')" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:border-indigo-400 transition cursor-pointer">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Rateizzi Attivi</span>
+          <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600">
+            <i data-lucide="receipt" class="w-5 h-5"></i>
+          </span>
+        </div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="kpiInstallments" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+          <span id="kpiInstallmentsAmount" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">€ 0,00</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Appuntamenti Studio -->
+      <div onclick="setQuickFilter('appuntamento')" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:border-emerald-400 transition cursor-pointer">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Appuntamenti</span>
+          <span class="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+            <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+          </span>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="kpiAppointments" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+          <span class="text-xs text-emerald-700 font-medium">in agenda</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- BARRA DI RICERCA E FILTRI -->
+    <section class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 space-y-3 no-print">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        
+        <!-- Tabs Filtro Categoria -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0" id="filterTabs">
+          <button data-filter="all" onclick="setQuickFilter('all')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-900 text-white whitespace-nowrap transition">
+            Tutti gli Attivi
+          </button>
+          <button data-filter="appuntamento" onclick="setQuickFilter('appuntamento')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            📅 Appuntamenti Studio
+          </button>
+          <button data-filter="rateizzo" onclick="setQuickFilter('rateizzo')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            💳 Rateizzi & F24
+          </button>
+          <button data-filter="urgent" onclick="setQuickFilter('urgent')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            ⚠️ Oggi & Scaduti
+          </button>
+          <button data-filter="high_intensity" onclick="setQuickFilter('high_intensity')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            🔥 Alta Intensità
+          </button>
+          <button data-filter="completed" onclick="setQuickFilter('completed')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            ✅ Completati / Pagati
+          </button>
+        </div>
+
+        <!-- Ricerca e Ordinamento -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div class="relative flex-1 sm:w-64">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input
+              type="text"
+              id="searchInput"
+              oninput="renderItems()"
+              placeholder="Cerca cliente, P.IVA, F24, rata..."
+              class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+
+          <select
+            id="sortSelect"
+            onchange="renderItems()"
+            class="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+          >
+            <option value="due_asc">Ordina: Scadenza più vicina</option>
+            <option value="intensity_desc">Ordina: Intensità Notifica (Alta → Bassa)</option>
+            <option value="client_asc">Ordina: Cliente (A → Z)</option>
+            <option value="amount_desc">Ordina: Importo Rata decrescente</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- LISTA APPUNTAMENTI E RATEIZZI -->
+    <section>
+      <div id="itemsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Popolato dinamicamente da app.js -->
+      </div>
+
+      <!-- Stato Vuoto -->
+      <div id="emptyState" class="hidden bg-white rounded-2xl p-10 text-center border border-dashed border-slate-300 my-4">
+        <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-3">
+          <i data-lucide="calendar-check-2" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">Nessun promemoria o rateizzo trovato</h3>
+        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-1">
+          Aggiungi un nuovo appuntamento o genera un piano di rateizzazione fiscale per attivare le notifiche automatiche dello Studio Carifi.
+        </p>
+        <div class="mt-5 flex justify-center gap-3">
+          <button onclick="openItemModal()" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition">
+            + Aggiungi Appuntamento / Rata
+          </button>
+          <button onclick="openInstallmentPlanModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition">
+            Genera Piano Rateizzi
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BARRA DI NAVIGAZIONE INFERIORE PER MOBILE (iOS / iPhone Style) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-800 z-30 px-2 py-1.5 flex items-center justify-around no-print" style="padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.35rem);">
+    <button onclick="setQuickFilter('all')" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg text-amber-400">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Tutti</span>
+    </button>
+    <button onclick="setQuickFilter('rateizzo')" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg hover:text-white">
+      <i data-lucide="receipt" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Rateizzi</span>
+    </button>
+    <button onclick="openItemModal()" class="flex flex-col items-center justify-center -mt-5 w-12 h-12 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg border-2 border-slate-900">
+      <i data-lucide="plus" class="w-6 h-6"></i>
+    </button>
+    <button onclick="setQuickFilter('appuntamento')" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg hover:text-white">
+      <i data-lucide="calendar" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Agenda</span>
+    </button>
+    <button onclick="openSettingsModal()" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg hover:text-white">
+      <i data-lucide="cloud-cog" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Cloud/iOS</span>
+    </button>
+  </nav>
+
+  <!-- ========================================================================
+       MODALE 1: CREA / MODIFICA APPUNTAMENTO O RATEIZZO
+  ========================================================================= -->
+  <div id="itemModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      
+      <!-- Intestazione Modale -->
+      <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-amber-500/20 text-amber-400">
+            <i data-lucide="bell-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="itemModalTitle" class="text-base font-bold">Nuovo Appuntamento o Rateizzo</h3>
+            <p class="text-xs text-slate-400">Studio Carifi Commercialista — Configura scadenza e intensità avvisi</p>
+          </div>
+        </div>
+        <button onclick="closeItemModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Corpo Form -->
+      <form id="itemForm" onsubmit="saveItemForm(event)" class="p-5 space-y-5 overflow-y-auto flex-1">
+        <input type="hidden" id="itemId" />
+
+        <!-- Sezione 1: Tipologia e Cliente -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tipologia Scadenza *</label>
+            <select id="itemCategory" onchange="handleCategoryChange()" required class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+              <option value="rateizzo">💳 Rateizzo Fiscale (AdE / INPS / Riscossione)</option>
+              <option value="f24">📄 Scadenza F24 / Dichiarazione / Tributo</option>
+              <option value="appuntamento">📅 Appuntamento in Studio / Call Cliente</option>
+              <option value="rottamazione">⚖️ Rottamazione / Definizione Agevolata</option>
+              <option value="altro">📌 Altro Promemoria Studio</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cliente / Ragione Sociale *</label>
+            <input type="text" id="itemClient" required placeholder="Es. Alfa S.r.l. - Mario Rossi" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Titolo e Dettagli Rata -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Oggetto / Descrizione Scadenza *</label>
+            <input type="text" id="itemTitle" required placeholder="Es. Pagamento 3ª Rata Avviso Bonario IVA" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+          </div>
+
+          <div id="amountFieldWrapper">
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Importo Rata (€)</label>
+            <input type="number" step="0.01" min="0" id="itemAmount" placeholder="Es. 850.00" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Riferimento Rata e Contatto Cliente -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Numero Rata / Codice Pratica (Opzionale)</label>
+            <input type="text" id="itemInstallmentRef" placeholder="Es. Rata 3 di 8 — Prot. 982341" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Telefono / Email Cliente (per contatto rapido)</label>
+            <input type="text" id="itemPhone" placeholder="Es. 333 1234567" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Data e Ora di Scadenza -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+          <div class="flex items-center gap-2 text-slate-800 font-bold text-sm">
+            <i data-lucide="calendar-clock" class="w-4 h-4 text-amber-600"></i>
+            <span>Data di Scadenza e Configurazione Notifiche</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Data e Ora Scadenza *</label>
+              <input type="datetime-local" id="itemDueDate" required onchange="updatePreviewNotifyTime()" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Quando iniziare a ricevere notifiche? *</label>
+              <select id="itemLeadTime" onchange="handleLeadTimeChange()" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                <option value="0">All'orario esatto della scadenza</option>
+                <option value="15">15 minuti prima della scadenza</option>
+                <option value="30">30 minuti prima della scadenza</option>
+                <option value="60">1 ora prima della scadenza</option>
+                <option value="120">2 ore prima della scadenza</option>
+                <option value="1440" selected>1 giorno prima (24 ore prima)</option>
+                <option value="4320">3 giorni prima della scadenza</option>
+                <option value="10080">7 giorni prima della scadenza</option>
+                <option value="custom">Data e ora personalizzata...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Data inizio notifiche personalizzata -->
+          <div id="customNotifyWrapper" class="hidden">
+            <label class="block text-xs font-bold uppercase text-amber-700 mb-1">Scegli Data e Ora esatta di inizio notifiche *</label>
+            <input type="datetime-local" id="itemCustomNotifyAt" class="w-full px-3 py-2 text-sm rounded-lg border border-amber-400 bg-amber-50/40 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+          </div>
+
+          <!-- Preavvisi Aggiuntivi Multipli (es. 7gg + 3gg + 1gg) -->
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1.5">Preavvisi preparatori automatici (opzionali)</label>
+            <div class="flex flex-wrap gap-2">
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" id="preAlert7d" class="rounded text-amber-600" checked />
+                <span>Avvisa anche 7 giorni prima</span>
+              </label>
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" id="preAlert3d" class="rounded text-amber-600" checked />
+                <span>Avvisa anche 3 giorni prima</span>
+              </label>
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" id="preAlertMorning" class="rounded text-amber-600" checked />
+                <span>Avvisa la mattina stessa (09:00)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- SCELTA INTENSITÀ NOTIFICHE -->
+          <div class="pt-2 border-t border-slate-200">
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-2">
+              Intensità delle Notifiche (Con quale frequenza ricordartelo?) *
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              
+              <!-- Intensità Bassa -->
+              <label class="relative flex flex-col p-3 rounded-xl border-2 border-slate-200 bg-white cursor-pointer hover:border-emerald-400 transition has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/40">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-extrabold text-emerald-800 uppercase">🟢 Bassa</span>
+                  <input type="radio" name="intensityLevel" value="low" onchange="handleIntensityChange()" class="text-emerald-600 focus:ring-emerald-500" />
+                </div>
+                <span class="text-xs font-semibold text-slate-800 mt-1">Notifica Singola</span>
+                <span class="text-[11px] text-slate-500 mt-0.5">Un solo avviso all'orario stabilito senza ripetizioni.</span>
+              </label>
+
+              <!-- Intensità Media -->
+              <label class="relative flex flex-col p-3 rounded-xl border-2 border-slate-200 bg-white cursor-pointer hover:border-amber-400 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/40">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-extrabold text-amber-800 uppercase">🟡 Media</span>
+                  <input type="radio" name="intensityLevel" value="medium" onchange="handleIntensityChange()" checked class="text-amber-600 focus:ring-amber-500" />
+                </div>
+                <span class="text-xs font-semibold text-slate-800 mt-1">Promemoria Costante</span>
+                <span class="text-[11px] text-slate-500 mt-0.5">Ripete l'avviso periodicamente finché non confermi.</span>
+              </label>
+
+              <!-- Intensità Alta / Insistente -->
+              <label class="relative flex flex-col p-3 rounded-xl border-2 border-slate-200 bg-white cursor-pointer hover:border-red-400 transition has-[:checked]:border-red-600 has-[:checked]:bg-red-50/50">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-extrabold text-red-700 uppercase">🔴 Alta (Insistente)</span>
+                  <input type="radio" name="intensityLevel" value="high" onchange="handleIntensityChange()" class="text-red-600 focus:ring-red-500" />
+                </div>
+                <span class="text-xs font-semibold text-slate-800 mt-1">Allarme Continuo</span>
+                <span class="text-[11px] text-slate-500 mt-0.5">Suona e invia notifiche a raffica finché non premi Conferma!</span>
+              </label>
+
+            </div>
+          </div>
+
+          <!-- Frequenza di ripetizione (per Intensità Media e Alta) -->
+          <div id="repeatIntervalWrapper" class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-3 rounded-lg border border-slate-200">
+            <div>
+              <span class="text-xs font-bold text-slate-800 block">Frequenza ripetizione solleciti non confermati:</span>
+              <span class="text-[11px] text-slate-500">Ogni quanto tempo l'app deve inviarti nuovamente la notifica?</span>
+            </div>
+            <select id="itemRepeatMinutes" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none">
+              <option value="1">Ogni 1 minuto (Modalità Emergenza / Test)</option>
+              <option value="5">Ogni 5 minuti (Molto Insistente)</option>
+              <option value="15">Ogni 15 minuti (Insistente Studio)</option>
+              <option value="30">Ogni 30 minuti</option>
+              <option value="60" selected>Ogni ora (60 minuti)</option>
+              <option value="180">Ogni 3 ore</option>
+              <option value="720">2 volte al giorno (ogni 12 ore)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Note aggiuntive -->
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Note Studio / Istruzioni F24 / IBAN</label>
+          <textarea id="itemNotes" rows="2" placeholder="Es. Inviare delega F24 su WhatsApp al cliente entro le ore 11:00..." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+        </div>
+
+        <!-- Footer Azioni Modale -->
+        <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeItemModal()" class="px-4 py-2.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">
+            Annulla
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-900 hover:bg-slate-800 text-amber-400 shadow-md transition flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Salva e Attiva Notifiche</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODALE 2: GENERATORE AUTOMATICO PIANO RATEIZZI
+  ========================================================================= -->
+  <div id="planModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto">
+      <div class="bg-indigo-950 text-white px-5 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-indigo-500/20 text-indigo-300">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold">Generatore Automatico Piano Rateizzi</h3>
+            <p class="text-xs text-indigo-200">Crea tutte le rate mensili o trimestrali di un cliente in un solo clic</p>
+          </div>
+        </div>
+        <button onclick="closeInstallmentPlanModal()" class="text-indigo-300 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="generateInstallmentPlan(event)" class="p-5 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cliente / Ragione Sociale *</label>
+            <input type="text" id="planClient" required placeholder="Es. Edilizia Sud S.r.l." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Ente / Tipologia Piano *</label>
+            <input type="text" id="planTitle" required placeholder="Es. Rateizzo Avviso Bonario AdE" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Numero Totale Rate *</label>
+            <input type="number" id="planCount" min="2" max="120" value="8" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cadenza Rate *</label>
+            <select id="planFrequency" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white">
+              <option value="monthly">Mensile (ogni mese)</option>
+              <option value="quarterly" selected>Trimestrale (ogni 3 mesi)</option>
+              <option value="bimonthly">Bimestrale (ogni 2 mesi)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Importo Singola Rata (€)</label>
+            <input type="number" step="0.01" id="planAmount" placeholder="Es. 620.00" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Scadenza 1ª Rata *</label>
+            <input type="datetime-local" id="planFirstDate" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Intensità Notifiche per le Rate *</label>
+            <select id="planIntensity" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white font-semibold">
+              <option value="high" selected>🔴 Alta / Insistente (ogni 15 min)</option>
+              <option value="medium">🟡 Media (ogni ora)</option>
+              <option value="low">🟢 Bassa (avviso singolo)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Anticipo Notifica rispetto a ogni rata</label>
+          <select id="planLeadMinutes" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white">
+            <option value="1440">Inizia ad avvisare 1 giorno prima di ogni rata</option>
+            <option value="4320" selected>Inizia ad avvisare 3 giorni prima di ogni rata</option>
+            <option value="10080">Inizia ad avvisare 7 giorni prima di ogni rata</option>
+            <option value="60">Inizia ad avvisare 1 ora prima di ogni rata</option>
+          </select>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeInstallmentPlanModal()" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">
+            Annulla
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md">
+            Genera Tutte le Rate
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODALE 3: IMPOSTAZIONI CLOUD (SINCRONIZZAZIONE PC WINDOWS ↔ iOS) & TELEGRAM
+  ========================================================================= -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      
+      <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-sky-500/20 text-sky-400">
+            <i data-lucide="cloud-cog" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold">Sincronizzazione Istantanea PC Windows ↔ iPhone (iOS) & Notifiche</h3>
+            <p class="text-xs text-slate-400">Configura Cloud Realtime, Notifiche Push iOS e Bot Telegram dello Studio Carifi</p>
+          </div>
+        </div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-6 overflow-y-auto flex-1 text-sm">
+
+        <!-- 1. STATO CONNETTIVITÀ CLOUD REALTIME (SUPABASE) -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
+              <span>1. Database Cloud Realtime (Sincronizzazione Istantanea PC ↔ iPhone)</span>
+            </h4>
+            <span id="cloudModalBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+              Modalità Locale Attiva
+            </span>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Inserendo l'URL e la chiave gratuita del tuo progetto <strong>Supabase</strong>, ogni appuntamento o rateizzo aggiunto dal PC dell'ufficio apparirà <strong>in meno di 1 secondo</strong> sull'iPhone e viceversa.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Project URL</label>
+              <input type="url" id="cfgSupabaseUrl" placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Anon Public Key</label>
+              <input type="password" id="cfgSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white font-mono" />
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <button type="button" onclick="copySupabaseSql()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copia Script SQL Creazione Tabella</span>
+            </button>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="syncLocalToCloud()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white">
+                Salva e Connetti Cloud Realtime
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. NOTIFICHE PUSH DIRETTE SU IPHONE & WINDOWS TRAMITE BOT TELEGRAM STUDIO -->
+        <div class="bg-sky-50/60 p-4 rounded-xl border border-sky-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="send" class="w-4 h-4 text-sky-600"></i>
+              <span>2. Notifiche Push Garantite su iOS e Windows (Canale Telegram Studio)</span>
+            </h4>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-sky-100 text-sky-800">Consigliato per iOS</span>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Oltre alle notifiche del browser e all'allarme sonoro, puoi collegare un Bot Telegram gratuito dello Studio Carifi per ricevere i solleciti su iPhone anche quando il telefono è in tasca o in modalità risparmio energetico.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Telegram Bot Token (da @BotFather)</label>
+              <input type="password" id="cfgTelegramToken" placeholder="123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Telegram Chat ID (tuo o del gruppo Studio)</label>
+              <input type="text" id="cfgTelegramChatId" placeholder="Es. 987654321" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white font-mono" />
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <button type="button" onclick="testTelegramNotification()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-sky-300 text-sky-700 hover:bg-sky-100">
+              Invia Messaggio di Prova
+            </button>
+            <button type="button" onclick="saveTelegramConfig()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white">
+              Salva Configurazione Telegram
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. GUIDA INSTALLAZIONE SU PC WINDOWS E IPHONE (iOS) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
+            <h5 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="monitor" class="w-4 h-4 text-blue-600"></i>
+              <span>Installazione su PC Windows</span>
+            </h5>
+            <ol class="text-xs text-slate-600 space-y-1.5 list-decimal list-inside">
+              <li>Apri questa applicazione con <strong>Google Chrome</strong> o <strong>Microsoft Edge</strong>.</li>
+              <li>Clicca sull'icona <strong>"Installa Memo Studio Carifi"</strong> nella barra degli indirizzi (in alto a destra).</li>
+              <li>L'app verrà aggiunta sul <strong>Desktop di Windows</strong> e nella Barra delle Applicazioni e potrà inviare notifiche di sistema.</li>
+            </ol>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
+            <h5 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="smartphone" class="w-4 h-4 text-amber-600"></i>
+              <span>Installazione su iPhone (iOS)</span>
+            </h5>
+            <ol class="text-xs text-slate-600 space-y-1.5 list-decimal list-inside">
+              <li>Apri il link web dell'app da <strong>Safari</strong> su iPhone.</li>
+              <li>Tocca il pulsante <strong>Condividi</strong> (quadrato con freccia verso l'alto in basso).</li>
+              <li>Scorri e seleziona <strong>"Aggiungi alla schermata Home"</strong>.</li>
+              <li>Aprila dall'icona sulla Home e premi <strong>"Attiva Notifiche"</strong>.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- 4. BACKUP / ESPORTAZIONE DATI STUDIO -->
+        <div class="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="exportDataJson()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">
+              Esporta Backup JSON
+            </button>
+            <label class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer">
+              <span>Importa Backup</span>
+              <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
+            </label>
+          </div>
+          <button type="button" onclick="resetDemoData()" class="px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50">
+            Ripristina Dati Esempio
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST DI FEEDBACK -->
+  <div id="toastContainer" class="fixed bottom-16 md:bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
