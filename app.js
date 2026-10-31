@@ -1,5 +1,5 @@
 /**
- * MEMO STUDIO CARIFI COMMERCIALISTA
+ * STUDIO CARIFI COMMERCIALISTA — ORDINE DEI DOTTORI COMMERCIALISTI DI NOLA
  * Motore Applicativo: Gestione Appuntamenti, Scadenzario Rateizzi,
  * Sincronizzazione Cloud Realtime (PC Windows <-> iPhone iOS) e Notifiche ad Intensità Variabile.
  */
@@ -100,7 +100,7 @@ function updateLiveClock() {
 }
 
 // ============================================================================
-// GESTIONE DATI LOCALI E DATI ESEMPIO REALISTICI PER LO STUDIO CARIFI
+// GESTIONE DATI LOCALI (NESSUN DATO DI PROVA + RIMOZIONE AUTOMATICA VECCHI DEMO)
 // ============================================================================
 function loadConfig() {
   try {
@@ -121,117 +121,23 @@ function loadItems() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY_ITEMS);
     if (saved) {
-      items = JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      // Rimuove automaticamente tutti gli eventuali appuntamenti di prova ("demo-*") presenti in memoria
+      const cleaned = Array.isArray(parsed)
+        ? parsed.filter((item) => item && item.id && !String(item.id).startsWith('demo-'))
+        : [];
+      items = cleaned;
+      if (cleaned.length !== (Array.isArray(parsed) ? parsed.length : 0)) {
+        saveItemsLocally(false);
+      }
     } else {
-      items = getInitialDemoItems();
+      items = [];
       saveItemsLocally(false);
     }
   } catch (e) {
     console.error('Errore caricamento promemoria:', e);
-    items = getInitialDemoItems();
+    items = [];
   }
-}
-
-function getInitialDemoItems() {
-  const now = new Date();
-  const in2Hours = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  tomorrow.setHours(10, 30, 0, 0);
-  const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  in3Days.setHours(16, 0, 0, 0);
-  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  in7Days.setHours(12, 0, 0, 0);
-
-  return [
-    {
-      id: 'demo-rateizzo-1',
-      category: 'rateizzo',
-      client: 'Alfa Costruzioni S.r.l.',
-      title: 'Pagamento 4ª Rata Avviso Bonario IVA (Agenzia Entrate)',
-      amount: 1240.50,
-      installmentRef: 'Rata 4 di 8 — Codice Tributo 9001',
-      phone: '3351234567',
-      dueDate: in2Hours.toISOString(),
-      leadMinutes: 1440,
-      notifyStartAt: new Date(now.getTime() - 10 * 60 * 1000).toISOString(), // Già in finestra di avviso!
-      preAlerts: { d7: true, d3: true, morning: true },
-      preAlertsFired: {},
-      intensity: 'high',
-      repeatMinutes: 15,
-      acknowledged: false,
-      completed: false,
-      lastNotifiedAt: null,
-      snoozedUntil: null,
-      notes: 'Verificare addebito F24 telematico Entratel o inviare quietanza al cliente.',
-      updatedAt: now.toISOString()
-    },
-    {
-      id: 'demo-appuntamento-1',
-      category: 'appuntamento',
-      client: 'Dott. Giuseppe Bianchi',
-      title: 'Consulenza Bilancio Previsionale e Pianificazione Fiscale',
-      amount: null,
-      installmentRef: 'Studio — Sala Riunioni 1',
-      phone: '3479876543',
-      dueDate: tomorrow.toISOString(),
-      leadMinutes: 120,
-      notifyStartAt: new Date(tomorrow.getTime() - 120 * 60 * 1000).toISOString(),
-      preAlerts: { d7: false, d3: true, morning: true },
-      preAlertsFired: {},
-      intensity: 'medium',
-      repeatMinutes: 60,
-      acknowledged: false,
-      completed: false,
-      lastNotifiedAt: null,
-      snoozedUntil: null,
-      notes: 'Portare situazione contabile aggiornata al III trimestre.',
-      updatedAt: now.toISOString()
-    },
-    {
-      id: 'demo-rottamazione-1',
-      category: 'rottamazione',
-      client: 'Trasporti Meridionali S.a.s.',
-      title: 'Scadenza Rata Rottamazione Quater AdER',
-      amount: 2890.00,
-      installmentRef: 'Rata 6 di 18 — Tolleranza max 5 gg',
-      phone: '3281122334',
-      dueDate: in3Days.toISOString(),
-      leadMinutes: 4320,
-      notifyStartAt: new Date(in3Days.getTime() - 4320 * 60 * 1000).toISOString(),
-      preAlerts: { d7: true, d3: true, morning: true },
-      preAlertsFired: {},
-      intensity: 'high',
-      repeatMinutes: 30,
-      acknowledged: false,
-      completed: false,
-      lastNotifiedAt: null,
-      snoozedUntil: null,
-      notes: 'Attenzione: il mancato pagamento entro i 5 giorni di tolleranza comporta la decadenza dal piano.',
-      updatedAt: now.toISOString()
-    },
-    {
-      id: 'demo-f24-1',
-      category: 'f24',
-      client: 'Farmacia Santa Chiara S.n.c.',
-      title: 'Invio Delega F24 Ritenute e Contributi INPS Dipendenti',
-      amount: 3410.00,
-      installmentRef: 'Scadenza Mensile Unificata',
-      phone: '3405566778',
-      dueDate: in7Days.toISOString(),
-      leadMinutes: 1440,
-      notifyStartAt: new Date(in7Days.getTime() - 1440 * 60 * 1000).toISOString(),
-      preAlerts: { d7: true, d3: true, morning: true },
-      preAlertsFired: {},
-      intensity: 'medium',
-      repeatMinutes: 60,
-      acknowledged: false,
-      completed: false,
-      lastNotifiedAt: null,
-      snoozedUntil: null,
-      notes: 'Attendere conferma saldo conto corrente dal titolare prima dell\'invio.',
-      updatedAt: now.toISOString()
-    }
-  ];
 }
 
 function saveItemsLocally(broadcast = true) {
@@ -251,16 +157,19 @@ async function initSupabaseRealtime() {
 
   if (!appConfig.supabaseUrl || !appConfig.supabaseKey || !window.supabase) {
     if (statusBadge) statusBadge.textContent = 'Locale (Configura Cloud)';
-    if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+    if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-red-400';
     if (modalBadge) {
       modalBadge.textContent = 'Modalità Locale Attiva';
-      modalBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
+      modalBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-carifi-navy';
     }
     return;
   }
 
   try {
     supabaseClient = window.supabase.createClient(appConfig.supabaseUrl, appConfig.supabaseKey);
+
+    // Elimina eventuali vecchi record demo sul cloud se presenti
+    await supabaseClient.from('studio_carifi_memos').delete().like('id', 'demo-%');
 
     // Scarica i dati iniziali dal Cloud
     const { data, error } = await supabaseClient
@@ -271,11 +180,12 @@ async function initSupabaseRealtime() {
 
     if (data && Array.isArray(data)) {
       if (data.length > 0) {
-        items = data.map((row) => row.payload);
+        items = data
+          .map((row) => row.payload)
+          .filter((item) => item && item.id && !String(item.id).startsWith('demo-'));
         saveItemsLocally(false);
         renderAll();
       } else if (items.length > 0) {
-        // Se la tabella cloud è vuota, carica i dati locali sul cloud
         await pushAllItemsToCloud();
       }
     }
@@ -314,7 +224,7 @@ async function initSupabaseRealtime() {
 function handleCloudRealtimeEvent(payload) {
   if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
     const incoming = payload.new?.payload;
-    if (!incoming || !incoming.id) return;
+    if (!incoming || !incoming.id || String(incoming.id).startsWith('demo-')) return;
     const idx = items.findIndex((i) => i.id === incoming.id);
     if (idx >= 0) {
       items[idx] = incoming;
@@ -398,13 +308,6 @@ async function requestBrowserNotifications() {
   }
 }
 
-/**
- * Controlla periodicamente tutte le scadenze e stabilisce se inviare una notifica
- * in base a:
- *  - Orario di inizio notifiche scelto dall'utente (notifyStartAt)
- *  - Preavvisi preparatori (7gg prima, 3gg prima, mattina stessa alle 09:00)
- *  - Intensità scelta (low = 1 sola volta, medium = ripetuta, high = allarme insistente)
- */
 function checkAndDispatchNotifications() {
   const now = new Date();
   const nowMs = now.getTime();
@@ -461,14 +364,12 @@ function checkAndDispatchNotifications() {
       const repeatIntervalMs = (Number(item.repeatMinutes) || 60) * 60 * 1000;
 
       if (item.intensity === 'low') {
-        // Intensità bassa: invia una sola volta
         if (!item.lastNotifiedAt) {
           item.lastNotifiedAt = now.toISOString();
           stateChanged = true;
           dispatchMultiChannelAlert(item, 'Promemoria Scadenza');
         }
       } else {
-        // Intensità media o alta (insistente): ripete ogni repeatMinutes finché non confermato!
         if (!lastMs || (nowMs - lastMs) >= repeatIntervalMs) {
           item.lastNotifiedAt = now.toISOString();
           stateChanged = true;
@@ -508,29 +409,16 @@ function updateActiveAlarmBanner(activeAlarms) {
   }
 }
 
-/**
- * Invia la notifica su tutti i canali attivi:
- * 1. Segnale Acustico Sintetizzato (Web Audio API)
- * 2. Notifica Push Nativa (Windows Desktop / iOS Home Screen PWA)
- * 3. Bot Telegram dello Studio Carifi (se configurato)
- * 4. Toast Visivo in-app
- */
 function dispatchMultiChannelAlert(item, prefixLabel) {
   const amountStr = item.amount ? ` — € ${Number(item.amount).toLocaleString('it-IT', { minimumFractionDigits: 2 })}` : '';
   const dueFormatted = formatDateTimeIT(item.dueDate);
   const title = `${prefixLabel}: ${item.client}`;
   const body = `${item.title}${amountStr}\nScadenza: ${dueFormatted}`;
 
-  // 1. Riproduci allarme sonoro (più energico se intensità Alta)
   playAlertSound(item.intensity === 'high' ? 'urgent' : 'standard');
-
-  // 2. Toast in-app
   showToast(`${title} — ${item.title}`, item.intensity === 'high' ? 'error' : 'warning');
-
-  // 3. Notifica Push Sistema Operativo (Windows / iOS)
   sendSystemNotification(title, body, item.id, item.intensity === 'high');
 
-  // 4. Notifica Bot Telegram (se configurato per avviso su iPhone in background)
   if (appConfig.telegramToken && appConfig.telegramChatId) {
     sendTelegramMessage(
       `🏛 *STUDIO CARIFI COMMERCIALISTA*\n` +
@@ -549,8 +437,8 @@ async function sendSystemNotification(title, body, itemId, isUrgent = false) {
 
   const options = {
     body: body,
-    icon: './icon.svg',
-    badge: './icon.svg',
+    icon: './logo.jpg',
+    badge: './logo.jpg',
     tag: itemId ? `carifi-${itemId}-${Date.now()}` : `carifi-test-${Date.now()}`,
     requireInteraction: isUrgent,
     data: { itemId }
@@ -570,9 +458,6 @@ async function sendSystemNotification(title, body, itemId, isUrgent = false) {
   }
 }
 
-/**
- * Sintetizzatore Audio Integrato (Web Audio API) per suoneria avviso e allarme studio
- */
 function playAlertSound(mode = 'standard') {
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -582,8 +467,8 @@ function playAlertSound(mode = 'standard') {
 
     const now = audioCtx.currentTime;
     const notes = mode === 'urgent'
-      ? [880, 1174.66, 880, 1174.66, 1318.51] // Sequenza sveglia urgente
-      : [587.33, 880]; // Doppio chime elegante
+      ? [880, 1174.66, 880, 1174.66, 1318.51]
+      : [587.33, 880];
 
     notes.forEach((freq, idx) => {
       const osc = audioCtx.createOscillator();
@@ -700,9 +585,6 @@ function deleteItem(id) {
   showToast('Promemoria eliminato.', 'info');
 }
 
-/**
- * Crea rapidamente la rata del mese/trimestre successivo partendo da una rata esistente
- */
 function duplicateNextInstallment(id) {
   const source = items.find((i) => i.id === id);
   if (!source) return;
@@ -737,9 +619,6 @@ function duplicateNextInstallment(id) {
   showToast(`Creata rata successiva per ${newItem.client} (${formatDateTimeIT(newItem.dueDate)})`, 'success');
 }
 
-/**
- * Apre WhatsApp con un messaggio formale già pronto da inviare al cliente dello Studio Carifi
- */
 function notifyClientWhatsApp(id) {
   const item = items.find((i) => i.id === id);
   if (!item) return;
@@ -805,9 +684,9 @@ function setQuickFilter(filter) {
   currentFilter = filter;
   document.querySelectorAll('.filter-tab').forEach((btn) => {
     if (btn.dataset.filter === filter) {
-      btn.className = 'filter-tab px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-900 text-white whitespace-nowrap transition';
+      btn.className = 'filter-tab px-4 py-2 rounded-xl text-xs font-bold bg-carifi-navy text-white shadow-xs whitespace-nowrap transition';
     } else {
-      btn.className = 'filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition';
+      btn.className = 'filter-tab px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition';
     }
   });
   renderItems();
@@ -824,7 +703,6 @@ function renderItems() {
   endOfToday.setHours(23, 59, 59, 999);
 
   let filtered = items.filter((item) => {
-    // Filtro tab
     if (currentFilter === 'completed') {
       if (!item.completed) return false;
     } else {
@@ -835,7 +713,6 @@ function renderItems() {
       if (currentFilter === 'high_intensity' && item.intensity !== 'high') return false;
     }
 
-    // Ricerca testuale
     if (searchQuery) {
       const haystack = `${item.client} ${item.title} ${item.installmentRef || ''} ${item.notes || ''}`.toLowerCase();
       if (!haystack.includes(searchQuery)) return false;
@@ -843,7 +720,6 @@ function renderItems() {
     return true;
   });
 
-  // Ordinamento
   filtered.sort((a, b) => {
     if (sortMode === 'due_asc') {
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
@@ -881,21 +757,26 @@ function renderItems() {
     const countdownText = getRelativeTimeLabel(dueMs, nowMs, item.completed);
 
     return `
-      <article id="item-${item.id}" class="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border-2 transition flex flex-col justify-between ${
+      <article id="item-${item.id}" class="carifi-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden ${
         isAlarmRinging && item.intensity === 'high'
-          ? 'urgent-card-active border-red-500 bg-red-50/15'
+          ? 'urgent-card-active border-2 border-carifi-crimson bg-red-50/15'
           : isOverdue
-          ? 'border-red-300'
-          : 'border-slate-200 hover:border-slate-300'
+          ? 'border-carifi-crimson/50'
+          : ''
       }">
-        <div>
+        <!-- Barra laterale identificativa Navy/Crimson -->
+        <div class="absolute top-0 left-0 w-1.5 h-full ${
+          item.intensity === 'high' ? 'bg-carifi-crimson' : 'bg-carifi-navy'
+        }"></div>
+
+        <div class="pl-2">
           <!-- Riga Superiore: Categoria, Intensità Notifica e Importo -->
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold ${categoryMeta.classes}">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${categoryMeta.classes}">
                 ${categoryMeta.label}
               </span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold ${intensityMeta.classes}" title="Frequenza di ripetizione delle notifiche">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${intensityMeta.classes}" title="Frequenza di ripetizione delle notifiche">
                 ${intensityMeta.label}
               </span>
             </div>
@@ -903,7 +784,7 @@ function renderItems() {
             ${
               item.amount
                 ? `<div class="text-right">
-                     <span class="text-base sm:text-lg font-extrabold text-slate-900 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+                     <span class="text-base sm:text-lg font-extrabold text-carifi-navy bg-slate-100 px-3 py-1 rounded-xl border border-slate-200">
                        € ${Number(item.amount).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                      </span>
                    </div>`
@@ -914,45 +795,45 @@ function renderItems() {
           <!-- Cliente e Titolo Scadenza -->
           <div class="space-y-1">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-extrabold uppercase tracking-wider text-amber-700">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-carifi-crimson">
                 ${escapeHtml(item.client)}
               </span>
               ${
                 item.installmentRef
-                  ? `<span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                  ? `<span class="text-xs font-semibold text-carifi-navy bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">
                        ${escapeHtml(item.installmentRef)}
                      </span>`
                   : ''
               }
             </div>
-            <h3 class="text-base font-bold text-slate-900 leading-snug ${item.completed ? 'line-through text-slate-400' : ''}">
+            <h3 class="text-base font-bold text-carifi-navy leading-snug ${item.completed ? 'line-through text-slate-400' : ''}">
               ${escapeHtml(item.title)}
             </h3>
           </div>
 
           <!-- Box Data Scadenza e Orario Inizio Notifiche -->
-          <div class="mt-3.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div class="flex items-center gap-2">
-              <i data-lucide="calendar-clock" class="w-4 h-4 ${isOverdue ? 'text-red-600' : 'text-slate-600'} shrink-0"></i>
+          <div class="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="calendar-clock" class="w-4 h-4 ${isOverdue ? 'text-carifi-crimson' : 'text-carifi-navy'} shrink-0"></i>
               <div>
                 <span class="text-[11px] text-slate-500 block">Scadenza Fissata:</span>
-                <span class="font-bold ${isOverdue ? 'text-red-600' : 'text-slate-900'}">
+                <span class="font-bold ${isOverdue ? 'text-carifi-crimson' : 'text-carifi-navy'}">
                   ${formatDateTimeIT(item.dueDate)}
                 </span>
-                <span class="block text-[11px] font-semibold ${isOverdue ? 'text-red-600' : 'text-amber-700'}">
+                <span class="block text-[11px] font-semibold ${isOverdue ? 'text-carifi-crimson' : 'text-slate-600'}">
                   ${countdownText}
                 </span>
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
-              <i data-lucide="bell-ring" class="w-4 h-4 ${isAlarmRinging ? 'text-red-600 animate-bell' : 'text-amber-600'} shrink-0"></i>
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="bell-ring" class="w-4 h-4 ${isAlarmRinging ? 'text-carifi-crimson animate-bell' : 'text-carifi-navy'} shrink-0"></i>
               <div>
                 <span class="text-[11px] text-slate-500 block">Inizio Notifiche:</span>
-                <span class="font-semibold text-slate-800">
+                <span class="font-semibold text-carifi-navy">
                   ${formatDateTimeIT(item.notifyStartAt)}
                 </span>
-                <span class="block text-[11px] ${item.acknowledged ? 'text-emerald-600 font-semibold' : 'text-slate-500'}">
+                <span class="block text-[11px] ${item.acknowledged ? 'text-emerald-700 font-semibold' : 'text-slate-500'}">
                   ${
                     item.completed
                       ? '✅ Pratica Conclusa'
@@ -969,7 +850,7 @@ function renderItems() {
 
           ${
             item.notes
-              ? `<p class="mt-2.5 text-xs text-slate-600 bg-amber-50/50 border-l-2 border-amber-400 pl-2.5 py-1">
+              ? `<p class="mt-3 text-xs text-slate-600 bg-slate-50 border-l-2 border-carifi-crimson pl-3 py-1.5 rounded-r-lg">
                    ${escapeHtml(item.notes)}
                  </p>`
               : ''
@@ -977,21 +858,21 @@ function renderItems() {
         </div>
 
         <!-- Barra Azioni Card -->
-        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 no-print">
+        <div class="mt-4 pt-3 pl-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 no-print">
           <div class="flex flex-wrap items-center gap-1.5">
             ${
               isAlarmRinging && !item.acknowledged
-                ? `<button onclick="acknowledgeItem('${item.id}')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-600 hover:bg-red-700 text-white shadow-xs transition">
+                ? `<button onclick="acknowledgeItem('${item.id}')" class="btn-carifi-crimson inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold">
                      <i data-lucide="bell-off" class="w-3.5 h-3.5"></i>
                      <span>Conferma Presa in Carico</span>
                    </button>`
                 : ''
             }
 
-            <button onclick="toggleCompleteItem('${item.id}')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold ${
+            <button onclick="toggleCompleteItem('${item.id}')" class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-bold ${
               item.completed
                 ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                : 'btn-carifi-navy text-white'
             } transition">
               <i data-lucide="${item.completed ? 'rotate-ccw' : 'check-circle-2'}" class="w-3.5 h-3.5"></i>
               <span>${item.completed ? 'Riapri' : (item.category === 'appuntamento' ? 'Completato' : 'Segna Pagato')}</span>
@@ -999,7 +880,7 @@ function renderItems() {
 
             ${
               ['rateizzo', 'rottamazione', 'f24'].includes(item.category)
-                ? `<button onclick="duplicateNextInstallment('${item.id}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition" title="Genera subito la rata del mese successivo">
+                ? `<button onclick="duplicateNextInstallment('${item.id}')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition" title="Genera subito la rata del mese successivo">
                      <i data-lucide="copy-plus" class="w-3.5 h-3.5"></i>
                      <span>+ Rata Succ.</span>
                    </button>`
@@ -1008,13 +889,13 @@ function renderItems() {
           </div>
 
           <div class="flex items-center gap-1">
-            <button onclick="notifyClientWhatsApp('${item.id}')" class="p-1.5 rounded-lg text-emerald-700 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 transition" title="Invia promemoria WhatsApp al cliente">
+            <button onclick="notifyClientWhatsApp('${item.id}')" class="p-2 rounded-xl text-emerald-700 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 transition" title="Invia promemoria WhatsApp al cliente">
               <i data-lucide="message-circle" class="w-4 h-4"></i>
             </button>
-            <button onclick="openItemModal('${item.id}')" class="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition" title="Modifica scadenza o intensità notifiche">
+            <button onclick="openItemModal('${item.id}')" class="p-2 rounded-xl text-carifi-navy hover:bg-slate-100 transition" title="Modifica scadenza o intensità notifiche">
               <i data-lucide="pencil" class="w-4 h-4"></i>
             </button>
-            <button onclick="deleteItem('${item.id}')" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition" title="Elimina">
+            <button onclick="deleteItem('${item.id}')" class="p-2 rounded-xl text-carifi-crimson hover:bg-red-50 transition" title="Elimina">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
@@ -1126,9 +1007,7 @@ function handleCategoryChange() {
   }
 }
 
-function updatePreviewNotifyTime() {
-  // Mantiene coerente il campo custom se attivo
-}
+function updatePreviewNotifyTime() {}
 
 function saveItemForm(e) {
   e.preventDefault();
@@ -1361,7 +1240,7 @@ async function testTelegramNotification() {
 }
 
 // ============================================================================
-// ESPORTAZIONE / IMPORTAZIONE BACKUP DATI
+// ESPORTAZIONE / IMPORTAZIONE E PULIZIA DATI
 // ============================================================================
 function exportDataJson() {
   const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
@@ -1394,13 +1273,21 @@ function importDataJson(event) {
   reader.readAsText(file);
 }
 
-function resetDemoData() {
-  if (!confirm('Vuoi ripristinare i dati dimostrativi dello Studio Carifi?')) return;
-  items = getInitialDemoItems();
+async function clearAllItems() {
+  if (!confirm('Vuoi cancellare tutti gli appuntamenti e rateizzi presenti in agenda?')) return;
+  items = [];
   saveItemsLocally();
+  if (supabaseClient) {
+    try {
+      await supabaseClient.from('studio_carifi_memos').delete().neq('id', '');
+    } catch (e) {
+      console.warn('Errore pulizia cloud:', e);
+    }
+  }
   renderAll();
   checkAndDispatchNotifications();
-  showToast('Dati dimostrativi ripristinati.', 'info');
+  closeSettingsModal();
+  showToast('Agenda svuotata completamente.', 'info');
 }
 
 // ============================================================================
@@ -1409,15 +1296,15 @@ function resetDemoData() {
 function getCategoryBadgeMeta(cat) {
   switch (cat) {
     case 'rateizzo':
-      return { label: '💳 Rateizzo Fiscale', classes: 'bg-indigo-100 text-indigo-800' };
+      return { label: '💳 Rateizzo Fiscale', classes: 'bg-slate-100 text-carifi-navy border border-slate-200' };
     case 'f24':
-      return { label: '📄 Scadenza F24 / Tributi', classes: 'bg-blue-100 text-blue-800' };
+      return { label: '📄 Scadenza F24 / Tributi', classes: 'bg-blue-50 text-carifi-navyMid border border-blue-200' };
     case 'rottamazione':
-      return { label: '⚖️ Rottamazione AdER', classes: 'bg-purple-100 text-purple-800' };
+      return { label: '⚖️ Rottamazione AdER', classes: 'bg-red-50 text-carifi-crimson border border-red-200' };
     case 'appuntamento':
-      return { label: '📅 Appuntamento Studio', classes: 'bg-emerald-100 text-emerald-800' };
+      return { label: '📅 Appuntamento Studio', classes: 'bg-emerald-50 text-emerald-800 border border-emerald-200' };
     default:
-      return { label: '📌 Promemoria Studio', classes: 'bg-slate-100 text-slate-800' };
+      return { label: '📌 Promemoria Studio', classes: 'bg-slate-100 text-slate-800 border border-slate-200' };
   }
 }
 
@@ -1425,13 +1312,13 @@ function getIntensityBadgeMeta(intensity, repeatMin) {
   if (intensity === 'high') {
     return {
       label: `🔴 Alta Intensità (ogni ${repeatMin || 15} min)`,
-      classes: 'bg-red-100 text-red-800 border border-red-300'
+      classes: 'bg-red-50 text-carifi-crimson border border-red-300'
     };
   }
   if (intensity === 'medium') {
     return {
-      label: `🟡 Media Intensità (ogni ${repeatMin || 60} min)`,
-      classes: 'bg-amber-100 text-amber-800 border border-amber-300'
+      label: `🔵 Media Intensità (ogni ${repeatMin || 60} min)`,
+      classes: 'bg-slate-100 text-carifi-navy border border-slate-300'
     };
   }
   return {
@@ -1495,10 +1382,10 @@ function showToast(message, type = 'info') {
   if (!container) return;
 
   const colors = {
-    success: 'bg-emerald-900 text-white border-emerald-500',
-    warning: 'bg-amber-500 text-slate-950 border-amber-700',
-    error: 'bg-red-600 text-white border-red-800',
-    info: 'bg-slate-900 text-white border-slate-700'
+    success: 'bg-carifi-navy text-white border-emerald-400',
+    warning: 'bg-carifi-navyMid text-white border-amber-400',
+    error: 'bg-carifi-crimson text-white border-white',
+    info: 'bg-carifi-navy text-white border-carifi-crimson'
   };
 
   const toast = document.createElement('div');

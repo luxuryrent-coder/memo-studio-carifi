@@ -1,11 +1,12 @@
-const CACHE_NAME = 'studio-carifi-memo-v1';
+const CACHE_NAME = 'studio-carifi-memo-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './logo.jpg'
 ];
 
 self.addEventListener('install', (event) => {

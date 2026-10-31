@@ -1,21 +1,27 @@
 {
-  "name": "Memo Studio Carifi Commercialista",
+  "name": "Studio Carifi Commercialista — Agenda & Scadenzario",
   "short_name": "Studio Carifi",
-  "description": "Sistema gestionale di promemoria, appuntamenti e scadenzario rateizzi fiscali in tempo reale per lo Studio Carifi Commercialista.",
+  "description": "Sistema gestionale di promemoria, appuntamenti e scadenzario rateizzi fiscali in tempo reale per lo Studio Carifi Commercialista - Ordine dei Dottori Commercialisti di Nola.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#122b49",
+  "theme_color": "#122b49",
   "lang": "it-IT",
   "categories": ["business", "finance", "productivity"],
   "icons": [
     {
+      "src": "./logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
       "src": "./icon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

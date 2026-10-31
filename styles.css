@@ -1,25 +1,102 @@
-/* Stili personalizzati Memo Studio Carifi Commercialista */
+/* ============================================================================
+   STUDIO CARIFI COMMERCIALISTA — ORDINE DEI DOTTORI COMMERCIALISTI DI NOLA
+   Design System Istituzionale: Blu Navy (#122b49), Rosso Cremisi (#b81414), Bianco Puro
+   ============================================================================ */
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --carifi-navy-dark: #0b1c31;
+  --carifi-navy: #122b49;
+  --carifi-navy-mid: #1a3a60;
+  --carifi-navy-light: #254d7d;
+  --carifi-crimson: #b81414;
+  --carifi-crimson-dark: #8f0e0e;
+  --carifi-crimson-light: #dc2626;
+  --carifi-surface: #f3f6fa;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--carifi-surface);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(18, 43, 73, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(184, 20, 20, 0.03) 0px, transparent 50%);
   padding-top: var(--safe-top);
-  padding-bottom: calc(var(--safe-bottom) + 4rem);
+  padding-bottom: calc(var(--safe-bottom) + 4.5rem);
   -webkit-tap-highlight-color: transparent;
+  color: #0f233c;
+}
+
+/* Tipografia Istituzionale come da Logo Ufficiale */
+.font-carifi-serif {
+  font-family: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-carifi-Geometric {
+  font-family: 'Montserrat', 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Sfondo Header Istituzionale Blu Navy Studio Carifi */
+.carifi-header-gradient {
+  background: linear-gradient(135deg, #0d213a 0%, #122b49 55%, #163356 100%);
+}
+
+/* Linea di accento Rosso Cremisi sotto l'header */
+.carifi-crimson-divider {
+  height: 3px;
+  background: linear-gradient(90deg, rgba(184,20,20,0.2) 0%, #b81414 25%, #dc2626 50%, #b81414 75%, rgba(184,20,20,0.2) 100%);
+}
+
+/* Pulsante Primario Rosso Cremisi Studio Carifi */
+.btn-carifi-crimson {
+  background: linear-gradient(135deg, #c81616 0%, #9e0f0f 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px -2px rgba(184, 20, 20, 0.45);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-carifi-crimson:hover {
+  background: linear-gradient(135deg, #dc1c1c 0%, #b31212 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -2px rgba(184, 20, 20, 0.55);
+}
+
+/* Pulsante Secondario Blu Navy Studio Carifi */
+.btn-carifi-navy {
+  background: linear-gradient(135deg, #163356 0%, #0f233c 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px -2px rgba(18, 43, 73, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-carifi-navy:hover {
+  background: linear-gradient(135deg, #1e426e 0%, #122b49 100%);
+  transform: translateY(-1px);
+}
+
+/* Card Eleganti con ombra morbida e rifinitura Navy/Crimson */
+.carifi-card {
+  background: #ffffff;
+  border: 1px solid rgba(18, 43, 73, 0.1);
+  box-shadow: 0 4px 20px -4px rgba(18, 43, 73, 0.06);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.carifi-card:hover {
+  border-color: rgba(18, 43, 73, 0.24);
+  box-shadow: 0 10px 28px -6px rgba(18, 43, 73, 0.12);
+  transform: translateY(-1px);
 }
 
 /* Animazione per avvisi ad Alta Intensità / Insistenti */
 @keyframes pulse-urgent {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55);
-    border-color: rgba(239, 68, 68, 0.9);
+    box-shadow: 0 0 0 0 rgba(184, 20, 20, 0.55);
+    border-color: rgba(184, 20, 20, 0.95);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
-    border-color: rgba(220, 38, 38, 0.4);
+    box-shadow: 0 0 0 8px rgba(184, 20, 20, 0);
+    border-color: rgba(220, 38, 38, 0.45);
   }
 }
 
@@ -47,16 +124,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #eef2f7;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #9fb0c7;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #122b49;
 }
 
 /* Stampa scadenzario per lo studio */

@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Memo Studio Carifi Commercialista — Agenda & Scadenzario Rateizzi</title>
-  <meta name="description" content="Sistema di promemoria in tempo reale per appuntamenti e rateizzi fiscali dello Studio Carifi Commercialista" />
+  <title>Studio Carifi Commercialista — Agenda Appuntamenti & Scadenzario Rateizzi</title>
+  <meta name="description" content="Sistema istituzionale di promemoria in tempo reale per appuntamenti e rateizzi fiscali dello Studio Carifi Commercialista — Ordine dei Dottori Commercialisti di Nola" />
   
   <!-- Configurazione PWA per Windows e iOS (iPhone/iPad) -->
   <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#122b49" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Studio Carifi" />
-  <link rel="apple-touch-icon" href="./icon.svg" />
-  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="apple-touch-icon" href="./logo.jpg" />
+  <link rel="icon" type="image/jpeg" href="./logo.jpg" />
 
-  <!-- Font Inter -->
+  <!-- Font Istituzionali: Cinzel (Serif per STUDIO CARIFI), Montserrat (Geometric per COMMERCIALISTA) e Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,12 +28,13 @@
         extend: {
           colors: {
             carifi: {
-              900: '#0f172a',
-              800: '#1e293b',
-              700: '#1e3a8a',
-              600: '#2563eb',
-              gold: '#d97706',
-              goldLight: '#fbbf24'
+              navyDark: '#0b1c31',
+              navy: '#122b49',
+              navyMid: '#1a3a60',
+              navyLight: '#254d7d',
+              crimson: '#b81414',
+              crimsonDark: '#8f0e0e',
+              crimsonLight: '#dc2626'
             }
           }
         }
@@ -47,95 +48,110 @@
 
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col">
 
-  <!-- HEADER PRINCIPALE DELLO STUDIO -->
-  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30 border-b border-amber-500/30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+  <!-- HEADER ISTITUZIONALE STUDIO CARIFI COMMERCIALISTA -->
+  <header class="carifi-header-gradient text-white shadow-xl sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         
-        <!-- Logo e Titolo Studio -->
+        <!-- Stemma Ufficiale e Intestazione Ordine di Nola -->
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md text-slate-950 font-extrabold text-lg tracking-tighter shrink-0">
-              SC
+          <div class="flex items-center gap-3.5 sm:gap-4">
+            <!-- Logo Ufficiale Studio Carifi -->
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-carifi-crimson/70 shadow-lg bg-carifi-navy shrink-0 flex items-center justify-center">
+              <img src="./logo.jpg" alt="Logo Studio Carifi Commercialista" class="w-full h-full object-cover scale-110" />
             </div>
+
             <div>
-              <div class="flex items-center gap-2">
-                <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">Studio Carifi Commercialista</h1>
-                <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-pointer" onclick="openSettingsModal()" title="Clicca per configurare la sincronizzazione Cloud PC/iPhone">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <h1 class="font-carifi-serif text-xl sm:text-2xl font-bold tracking-wider text-white leading-none">
+                  STUDIO CARIFI
+                </h1>
+                <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 border border-white/15 cursor-pointer hover:bg-white/15 transition" onclick="openSettingsModal()" title="Clicca per configurare la sincronizzazione Cloud PC/iPhone">
                   <span id="syncDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                   <span id="syncStatusText">Sincronizzato</span>
                 </span>
               </div>
-              <p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                <span>Agenda Appuntamenti & Scadenzario Rateizzi</span>
-                <span class="hidden sm:inline">•</span>
-                <span id="liveClock" class="font-mono text-amber-400 font-medium"></span>
+
+              <p class="font-carifi-Geometric text-[11px] sm:text-xs font-bold tracking-[0.26em] text-slate-100 uppercase mt-1">
+                COMMERCIALISTA
               </p>
+              <p class="font-carifi-Geometric text-[9px] sm:text-[10px] font-medium tracking-[0.14em] text-slate-300/90 uppercase mt-0.5">
+                ORDINE DEI DOTTORI COMMERCIALISTI DI NOLA
+              </p>
+
+              <div class="flex items-center gap-2 mt-1.5 text-[11px] text-slate-300">
+                <span class="inline-flex items-center gap-1 text-red-300 font-semibold">
+                  <i data-lucide="clock" class="w-3 h-3"></i>
+                  <span id="liveClock" class="font-mono"></span>
+                </span>
+              </div>
             </div>
           </div>
 
           <!-- Pulsante Impostazioni su Mobile -->
-          <button onclick="openSettingsModal()" class="md:hidden p-2 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700" title="Impostazioni Sincronizzazione e Notifiche">
-            <i data-lucide="settings" class="w-5 h-5"></i>
+          <button onclick="openSettingsModal()" class="lg:hidden p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/15 transition" title="Impostazioni Sincronizzazione e Notifiche">
+            <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
           </button>
         </div>
 
         <!-- Azioni Rapide Header -->
-        <div class="flex flex-wrap items-center gap-2 no-print">
-          <button id="btnPermissionNotice" onclick="requestBrowserNotifications()" class="hidden items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-400 transition shadow-sm">
-            <i data-lucide="bell-ring" class="w-4 h-4"></i>
-            <span>Attiva Notifiche Dispositivo</span>
+        <div class="flex flex-wrap items-center gap-2.5 no-print">
+          <button id="btnPermissionNotice" onclick="requestBrowserNotifications()" class="hidden items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-white text-carifi-navy hover:bg-slate-100 transition shadow-md">
+            <i data-lucide="bell-ring" class="w-4 h-4 text-carifi-crimson"></i>
+            <span>Attiva Notifiche</span>
           </button>
 
-          <button onclick="triggerTestNotification()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Prova subito suono e notifica push">
-            <i data-lucide="volume-2" class="w-4 h-4 text-amber-400"></i>
+          <button onclick="triggerTestNotification()" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition" title="Prova subito suono e notifica push">
+            <i data-lucide="volume-2" class="w-4 h-4 text-red-400"></i>
             <span>Test Avviso</span>
           </button>
 
-          <button onclick="openInstallmentPlanModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-sm">
-            <i data-lucide="layers" class="w-4 h-4"></i>
+          <button onclick="openInstallmentPlanModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition shadow-xs">
+            <i data-lucide="layers" class="w-4 h-4 text-red-300"></i>
             <span>Genera Piano Rate</span>
           </button>
 
-          <button onclick="openItemModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 transition shadow-md">
+          <button onclick="openItemModal()" class="btn-carifi-crimson inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wide">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span>Nuovo Memo / Rata</span>
+            <span>Nuovo Appuntamento / Rata</span>
           </button>
 
-          <button onclick="openSettingsModal()" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Sincronizzazione Cloud iOS/Windows e Notifiche">
-            <i data-lucide="cloud-cog" class="w-4 h-4 text-sky-400"></i>
+          <button onclick="openSettingsModal()" class="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition" title="Sincronizzazione Cloud iOS/Windows e Notifiche">
+            <i data-lucide="cloud-cog" class="w-4 h-4 text-sky-300"></i>
             <span>Cloud & iOS</span>
           </button>
         </div>
 
       </div>
     </div>
+    <!-- Linea divisoria istituzionale Rosso Cremisi -->
+    <div class="carifi-crimson-divider"></div>
   </header>
 
-  <!-- BANNER ALLARME ATTIVO (Compare quando ci sono notifiche scadute/in corso non ancora confermate) -->
-  <div id="activeAlarmBanner" class="hidden bg-red-600 text-white border-b-2 border-red-800 shadow-lg no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  <!-- BANNER ALLARME ATTIVO (Compare quando ci sono notifiche in corso non ancora confermate) -->
+  <div id="activeAlarmBanner" class="hidden bg-gradient-to-r from-carifi-crimsonDark via-carifi-crimson to-carifi-crimsonDark text-white border-b border-red-950 shadow-xl no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="flex items-start sm:items-center gap-3">
-        <div class="p-2 rounded-full bg-white/20 shrink-0">
+        <div class="p-2.5 rounded-full bg-white/15 border border-white/25 shrink-0">
           <i data-lucide="bell-ring" class="w-6 h-6 animate-bell text-white"></i>
         </div>
         <div>
-          <h2 class="text-sm sm:text-base font-extrabold uppercase tracking-wide flex items-center gap-2">
-            <span>Allarme Studio Attivo — Richiesta Conferma!</span>
-            <span id="activeAlarmCountBadge" class="px-2 py-0.5 text-xs rounded-full bg-white text-red-700 font-bold">1</span>
+          <h2 class="text-sm sm:text-base font-extrabold uppercase tracking-wider flex items-center gap-2">
+            <span>Allarme Scadenza Studio — Richiesta Presa in Carico</span>
+            <span id="activeAlarmCountBadge" class="px-2.5 py-0.5 text-xs rounded-full bg-white text-carifi-crimson font-extrabold">1</span>
           </h2>
           <p id="activeAlarmDescription" class="text-xs sm:text-sm text-red-100 mt-0.5">
-            Ci sono scadenze o appuntamenti che hanno raggiunto l'orario di avviso e richiedono la tua presa in carico.
+            Ci sono scadenze o appuntamenti che hanno raggiunto l'orario di avviso e richiedono la tua conferma.
           </p>
         </div>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <button onclick="snoozeAllActiveAlarms(15)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-800 hover:bg-red-900 text-white border border-red-400/40 transition">
+        <button onclick="snoozeAllActiveAlarms(15)" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-black/25 hover:bg-black/40 text-white border border-white/25 transition">
           Posponi 15 min
         </button>
-        <button onclick="acknowledgeAllActiveAlarms()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-red-700 hover:bg-red-50 shadow transition">
+        <button onclick="acknowledgeAllActiveAlarms()" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-white text-carifi-crimson hover:bg-slate-100 shadow-md transition">
           Conferma Presa in Carico
         </button>
       </div>
@@ -146,107 +162,111 @@
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- RIEPILOGO KPI STUDIO CARIFI -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
       <!-- Card 1: Scadenze Oggi & Scadute -->
-      <div onclick="setQuickFilter('urgent')" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:border-red-400 transition cursor-pointer">
+      <div onclick="setQuickFilter('urgent')" class="carifi-card rounded-2xl p-4 sm:p-5 cursor-pointer relative overflow-hidden group">
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-carifi-crimson"></div>
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Oggi / Scaduti</span>
-          <span class="p-2 rounded-lg bg-red-50 text-red-600">
-            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Oggi / Scaduti</span>
+          <span class="p-2.5 rounded-xl bg-red-50 text-carifi-crimson group-hover:bg-carifi-crimson group-hover:text-white transition">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
           </span>
         </div>
-        <div class="mt-2 flex items-baseline gap-2">
-          <span id="kpiDueToday" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
-          <span class="text-xs text-red-600 font-medium">priorità immediata</span>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="kpiDueToday" class="text-2xl sm:text-3xl font-extrabold text-carifi-navy">0</span>
+          <span class="text-xs text-carifi-crimson font-semibold">priorità immediata</span>
         </div>
       </div>
 
       <!-- Card 2: Avvisi ad Alta Intensità -->
-      <div onclick="setQuickFilter('high_intensity')" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:border-amber-400 transition cursor-pointer">
+      <div onclick="setQuickFilter('high_intensity')" class="carifi-card rounded-2xl p-4 sm:p-5 cursor-pointer relative overflow-hidden group">
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-carifi-navy"></div>
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Allarmi Insistenti</span>
-          <span class="p-2 rounded-lg bg-amber-50 text-amber-600">
-            <i data-lucide="flame" class="w-5 h-5"></i>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Allarmi Insistenti</span>
+          <span class="p-2.5 rounded-xl bg-slate-100 text-carifi-navy group-hover:bg-carifi-navy group-hover:text-white transition">
+            <i data-lucide="bell-ring" class="w-5 h-5"></i>
           </span>
         </div>
-        <div class="mt-2 flex items-baseline gap-2">
-          <span id="kpiHighIntensity" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
-          <span class="text-xs text-amber-700 font-medium">notifica continua</span>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="kpiHighIntensity" class="text-2xl sm:text-3xl font-extrabold text-carifi-navy">0</span>
+          <span class="text-xs text-slate-600 font-semibold">notifica continua</span>
         </div>
       </div>
 
       <!-- Card 3: Rateizzi & F24 Attivi -->
-      <div onclick="setQuickFilter('rateizzo')" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:border-indigo-400 transition cursor-pointer">
+      <div onclick="setQuickFilter('rateizzo')" class="carifi-card rounded-2xl p-4 sm:p-5 cursor-pointer relative overflow-hidden group">
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-carifi-navyLight"></div>
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Rateizzi Attivi</span>
-          <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600">
-            <i data-lucide="receipt" class="w-5 h-5"></i>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Rateizzi & Tributi</span>
+          <span class="p-2.5 rounded-xl bg-slate-100 text-carifi-navyMid group-hover:bg-carifi-navyMid group-hover:text-white transition">
+            <i data-lucide="landmark" class="w-5 h-5"></i>
           </span>
         </div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <span id="kpiInstallments" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
-          <span id="kpiInstallmentsAmount" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">€ 0,00</span>
+        <div class="mt-3 flex items-baseline justify-between gap-1">
+          <span id="kpiInstallments" class="text-2xl sm:text-3xl font-extrabold text-carifi-navy">0</span>
+          <span id="kpiInstallmentsAmount" class="text-xs font-extrabold text-carifi-navy bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">€ 0,00</span>
         </div>
       </div>
 
       <!-- Card 4: Appuntamenti Studio -->
-      <div onclick="setQuickFilter('appuntamento')" class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:border-emerald-400 transition cursor-pointer">
+      <div onclick="setQuickFilter('appuntamento')" class="carifi-card rounded-2xl p-4 sm:p-5 cursor-pointer relative overflow-hidden group">
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-600"></div>
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Appuntamenti</span>
-          <span class="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-            <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Appuntamenti Studio</span>
+          <span class="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition">
+            <i data-lucide="calendar-check" class="w-5 h-5"></i>
           </span>
         </div>
-        <div class="mt-2 flex items-baseline gap-2">
-          <span id="kpiAppointments" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
-          <span class="text-xs text-emerald-700 font-medium">in agenda</span>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="kpiAppointments" class="text-2xl sm:text-3xl font-extrabold text-carifi-navy">0</span>
+          <span class="text-xs text-emerald-700 font-semibold">in agenda</span>
         </div>
       </div>
     </section>
 
     <!-- BARRA DI RICERCA E FILTRI -->
-    <section class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 space-y-3 no-print">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+    <section class="carifi-card rounded-2xl p-4 sm:p-5 no-print">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
         
         <!-- Tabs Filtro Categoria -->
-        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0" id="filterTabs">
-          <button data-filter="all" onclick="setQuickFilter('all')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-900 text-white whitespace-nowrap transition">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0" id="filterTabs">
+          <button data-filter="all" onclick="setQuickFilter('all')" class="filter-tab px-4 py-2 rounded-xl text-xs font-bold bg-carifi-navy text-white shadow-xs whitespace-nowrap transition">
             Tutti gli Attivi
           </button>
-          <button data-filter="appuntamento" onclick="setQuickFilter('appuntamento')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
-            📅 Appuntamenti Studio
+          <button data-filter="appuntamento" onclick="setQuickFilter('appuntamento')" class="filter-tab px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            Appuntamenti Studio
           </button>
-          <button data-filter="rateizzo" onclick="setQuickFilter('rateizzo')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
-            💳 Rateizzi & F24
+          <button data-filter="rateizzo" onclick="setQuickFilter('rateizzo')" class="filter-tab px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            Rateizzi & F24
           </button>
-          <button data-filter="urgent" onclick="setQuickFilter('urgent')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
-            ⚠️ Oggi & Scaduti
+          <button data-filter="urgent" onclick="setQuickFilter('urgent')" class="filter-tab px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            Oggi & Scaduti
           </button>
-          <button data-filter="high_intensity" onclick="setQuickFilter('high_intensity')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
-            🔥 Alta Intensità
+          <button data-filter="high_intensity" onclick="setQuickFilter('high_intensity')" class="filter-tab px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            Alta Intensità
           </button>
-          <button data-filter="completed" onclick="setQuickFilter('completed')" class="filter-tab px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
-            ✅ Completati / Pagati
+          <button data-filter="completed" onclick="setQuickFilter('completed')" class="filter-tab px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
+            Completati / Pagati
           </button>
         </div>
 
         <!-- Ricerca e Ordinamento -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
           <div class="relative flex-1 sm:w-64">
-            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
             <input
               type="text"
               id="searchInput"
               oninput="renderItems()"
               placeholder="Cerca cliente, P.IVA, F24, rata..."
-              class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy focus:border-carifi-navy transition"
             />
           </div>
 
           <select
             id="sortSelect"
             onchange="renderItems()"
-            class="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            class="px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/70 text-slate-700 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy transition"
           >
             <option value="due_asc">Ordina: Scadenza più vicina</option>
             <option value="intensity_desc">Ordina: Intensità Notifica (Alta → Bassa)</option>
@@ -260,25 +280,29 @@
 
     <!-- LISTA APPUNTAMENTI E RATEIZZI -->
     <section>
-      <div id="itemsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div id="itemsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         <!-- Popolato dinamicamente da app.js -->
       </div>
 
-      <!-- Stato Vuoto -->
-      <div id="emptyState" class="hidden bg-white rounded-2xl p-10 text-center border border-dashed border-slate-300 my-4">
-        <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-3">
-          <i data-lucide="calendar-check-2" class="w-7 h-7"></i>
+      <!-- Stato Vuoto Elegante con Stemma Studio Carifi -->
+      <div id="emptyState" class="hidden carifi-card rounded-3xl p-10 sm:p-14 text-center my-4 relative overflow-hidden">
+        <div class="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-5 shadow-md border-2 border-carifi-crimson/40 bg-carifi-navy flex items-center justify-center">
+          <img src="./logo.jpg" alt="Studio Carifi" class="w-full h-full object-cover scale-110" />
         </div>
-        <h3 class="text-base font-bold text-slate-800">Nessun promemoria o rateizzo trovato</h3>
-        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-1">
-          Aggiungi un nuovo appuntamento o genera un piano di rateizzazione fiscale per attivare le notifiche automatiche dello Studio Carifi.
+        <h3 class="font-carifi-serif text-lg sm:text-xl font-bold text-carifi-navy tracking-wide">
+          NESSUN APPUNTAMENTO O RATEIZZO IN AGENDA
+        </h3>
+        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-2 leading-relaxed">
+          L'agenda dello <strong>Studio Carifi Commercialista</strong> è pronta. Inserisci un nuovo appuntamento o genera un piano di rateizzazione per attivare il monitoraggio e le notifiche su PC e iPhone.
         </p>
-        <div class="mt-5 flex justify-center gap-3">
-          <button onclick="openItemModal()" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition">
-            + Aggiungi Appuntamento / Rata
+        <div class="mt-6 flex flex-wrap justify-center gap-3">
+          <button onclick="openItemModal()" class="btn-carifi-crimson px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold inline-flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Nuovo Appuntamento / Rata</span>
           </button>
-          <button onclick="openInstallmentPlanModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition">
-            Genera Piano Rateizzi
+          <button onclick="openInstallmentPlanModal()" class="btn-carifi-navy px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold inline-flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+            <span>Genera Piano Rateizzi</span>
           </button>
         </div>
       </div>
@@ -286,17 +310,17 @@
 
   </main>
 
-  <!-- BARRA DI NAVIGAZIONE INFERIORE PER MOBILE (iOS / iPhone Style) -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 border-t border-slate-800 z-30 px-2 py-1.5 flex items-center justify-around no-print" style="padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.35rem);">
-    <button onclick="setQuickFilter('all')" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg text-amber-400">
+  <!-- BARRA DI NAVIGAZIONE INFERIORE PER MOBILE (iOS / iPhone Style con colori Studio Carifi) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 carifi-header-gradient text-slate-300 border-t border-carifi-crimson/40 z-30 px-2 py-1.5 flex items-center justify-around no-print shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.35rem);">
+    <button onclick="setQuickFilter('all')" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg text-white">
       <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
       <span class="text-[10px] font-semibold">Tutti</span>
     </button>
     <button onclick="setQuickFilter('rateizzo')" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg hover:text-white">
-      <i data-lucide="receipt" class="w-5 h-5"></i>
+      <i data-lucide="landmark" class="w-5 h-5"></i>
       <span class="text-[10px] font-medium">Rateizzi</span>
     </button>
-    <button onclick="openItemModal()" class="flex flex-col items-center justify-center -mt-5 w-12 h-12 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg border-2 border-slate-900">
+    <button onclick="openItemModal()" class="btn-carifi-crimson flex flex-col items-center justify-center -mt-6 w-13 h-13 p-3 rounded-full text-white shadow-xl border-2 border-white/90">
       <i data-lucide="plus" class="w-6 h-6"></i>
     </button>
     <button onclick="setQuickFilter('appuntamento')" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg hover:text-white">
@@ -312,21 +336,21 @@
   <!-- ========================================================================
        MODALE 1: CREA / MODIFICA APPUNTAMENTO O RATEIZZO
   ========================================================================= -->
-  <div id="itemModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="itemModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
       
       <!-- Intestazione Modale -->
-      <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-2.5">
-          <div class="p-2 rounded-lg bg-amber-500/20 text-amber-400">
+      <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between shrink-0 border-b-2 border-carifi-crimson">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-carifi-crimson text-white shadow-sm">
             <i data-lucide="bell-plus" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 id="itemModalTitle" class="text-base font-bold">Nuovo Appuntamento o Rateizzo</h3>
-            <p class="text-xs text-slate-400">Studio Carifi Commercialista — Configura scadenza e intensità avvisi</p>
+            <h3 id="itemModalTitle" class="font-carifi-serif text-base sm:text-lg font-bold tracking-wide">Nuovo Appuntamento o Rateizzo</h3>
+            <p class="text-[11px] text-slate-300">Studio Carifi Commercialista — Scadenza, anticipo e intensità notifiche</p>
           </div>
         </div>
-        <button onclick="closeItemModal()" class="text-slate-400 hover:text-white p-1">
+        <button onclick="closeItemModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -338,63 +362,63 @@
         <!-- Sezione 1: Tipologia e Cliente -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tipologia Scadenza *</label>
-            <select id="itemCategory" onchange="handleCategoryChange()" required class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Tipologia Scadenza *</label>
+            <select id="itemCategory" onchange="handleCategoryChange()" required class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-white font-semibold focus:ring-2 focus:ring-carifi-navy focus:outline-none">
               <option value="rateizzo">💳 Rateizzo Fiscale (AdE / INPS / Riscossione)</option>
               <option value="f24">📄 Scadenza F24 / Dichiarazione / Tributo</option>
-              <option value="appuntamento">📅 Appuntamento in Studio / Call Cliente</option>
+              <option value="appuntamento">📅 Appuntamento in Studio / Consulenza</option>
               <option value="rottamazione">⚖️ Rottamazione / Definizione Agevolata</option>
               <option value="altro">📌 Altro Promemoria Studio</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cliente / Ragione Sociale *</label>
-            <input type="text" id="itemClient" required placeholder="Es. Alfa S.r.l. - Mario Rossi" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Cliente / Ragione Sociale *</label>
+            <input type="text" id="itemClient" required placeholder="Inserisci nome cliente o società..." class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-carifi-navy focus:outline-none" />
           </div>
         </div>
 
         <!-- Titolo e Dettagli Rata -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="sm:col-span-2">
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Oggetto / Descrizione Scadenza *</label>
-            <input type="text" id="itemTitle" required placeholder="Es. Pagamento 3ª Rata Avviso Bonario IVA" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Oggetto / Descrizione Scadenza *</label>
+            <input type="text" id="itemTitle" required placeholder="Es. Pagamento Rata Avviso Bonario / Riunione Bilancio" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-carifi-navy focus:outline-none" />
           </div>
 
           <div id="amountFieldWrapper">
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Importo Rata (€)</label>
-            <input type="number" step="0.01" min="0" id="itemAmount" placeholder="Es. 850.00" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Importo Rata (€)</label>
+            <input type="number" step="0.01" min="0" id="itemAmount" placeholder="0,00" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-carifi-navy focus:outline-none" />
           </div>
         </div>
 
         <!-- Riferimento Rata e Contatto Cliente -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Numero Rata / Codice Pratica (Opzionale)</label>
-            <input type="text" id="itemInstallmentRef" placeholder="Es. Rata 3 di 8 — Prot. 982341" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Numero Rata / Codice Pratica (Opzionale)</label>
+            <input type="text" id="itemInstallmentRef" placeholder="Es. Rata 1 di 8 — Prot. AdE" class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-carifi-navy focus:outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Telefono / Email Cliente (per contatto rapido)</label>
-            <input type="text" id="itemPhone" placeholder="Es. 333 1234567" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Telefono Cliente (per WhatsApp rapido)</label>
+            <input type="text" id="itemPhone" placeholder="Es. 333 1234567" class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-carifi-navy focus:outline-none" />
           </div>
         </div>
 
-        <!-- Data e Ora di Scadenza -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-          <div class="flex items-center gap-2 text-slate-800 font-bold text-sm">
-            <i data-lucide="calendar-clock" class="w-4 h-4 text-amber-600"></i>
-            <span>Data di Scadenza e Configurazione Notifiche</span>
+        <!-- Data e Ora di Scadenza e Regole Notifica -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-4">
+          <div class="flex items-center gap-2 text-carifi-navy font-bold text-sm">
+            <i data-lucide="calendar-clock" class="w-4 h-4 text-carifi-crimson"></i>
+            <span>Data di Scadenza e Regole di Notifica</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Data e Ora Scadenza *</label>
-              <input type="datetime-local" id="itemDueDate" required onchange="updatePreviewNotifyTime()" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+              <input type="datetime-local" id="itemDueDate" required onchange="updatePreviewNotifyTime()" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-white font-semibold focus:ring-2 focus:ring-carifi-navy focus:outline-none" />
             </div>
 
             <div>
               <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Quando iniziare a ricevere notifiche? *</label>
-              <select id="itemLeadTime" onchange="handleLeadTimeChange()" class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+              <select id="itemLeadTime" onchange="handleLeadTimeChange()" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-carifi-navy focus:outline-none">
                 <option value="0">All'orario esatto della scadenza</option>
                 <option value="15">15 minuti prima della scadenza</option>
                 <option value="30">30 minuti prima della scadenza</option>
@@ -410,24 +434,24 @@
 
           <!-- Data inizio notifiche personalizzata -->
           <div id="customNotifyWrapper" class="hidden">
-            <label class="block text-xs font-bold uppercase text-amber-700 mb-1">Scegli Data e Ora esatta di inizio notifiche *</label>
-            <input type="datetime-local" id="itemCustomNotifyAt" class="w-full px-3 py-2 text-sm rounded-lg border border-amber-400 bg-amber-50/40 focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+            <label class="block text-xs font-bold uppercase text-carifi-crimson mb-1">Scegli Data e Ora esatta di inizio notifiche *</label>
+            <input type="datetime-local" id="itemCustomNotifyAt" class="w-full px-3.5 py-2 text-sm rounded-xl border border-red-300 bg-red-50/30 focus:ring-2 focus:ring-carifi-crimson focus:outline-none" />
           </div>
 
-          <!-- Preavvisi Aggiuntivi Multipli (es. 7gg + 3gg + 1gg) -->
+          <!-- Preavvisi Aggiuntivi Multipli -->
           <div>
             <label class="block text-xs font-bold uppercase text-slate-600 mb-1.5">Preavvisi preparatori automatici (opzionali)</label>
             <div class="flex flex-wrap gap-2">
-              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" id="preAlert7d" class="rounded text-amber-600" checked />
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" id="preAlert7d" class="rounded text-carifi-navy" checked />
                 <span>Avvisa anche 7 giorni prima</span>
               </label>
-              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" id="preAlert3d" class="rounded text-amber-600" checked />
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" id="preAlert3d" class="rounded text-carifi-navy" checked />
                 <span>Avvisa anche 3 giorni prima</span>
               </label>
-              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" id="preAlertMorning" class="rounded text-amber-600" checked />
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" id="preAlertMorning" class="rounded text-carifi-navy" checked />
                 <span>Avvisa la mattina stessa (09:00)</span>
               </label>
             </div>
@@ -435,8 +459,8 @@
 
           <!-- SCELTA INTENSITÀ NOTIFICHE -->
           <div class="pt-2 border-t border-slate-200">
-            <label class="block text-xs font-bold uppercase text-slate-700 mb-2">
-              Intensità delle Notifiche (Con quale frequenza ricordartelo?) *
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-2">
+              Intensità delle Notifiche (Frequenza dei solleciti) *
             </label>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               
@@ -451,20 +475,20 @@
               </label>
 
               <!-- Intensità Media -->
-              <label class="relative flex flex-col p-3 rounded-xl border-2 border-slate-200 bg-white cursor-pointer hover:border-amber-400 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/40">
+              <label class="relative flex flex-col p-3 rounded-xl border-2 border-slate-200 bg-white cursor-pointer hover:border-carifi-navyLight transition has-[:checked]:border-carifi-navy has-[:checked]:bg-slate-100/70">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-extrabold text-amber-800 uppercase">🟡 Media</span>
-                  <input type="radio" name="intensityLevel" value="medium" onchange="handleIntensityChange()" checked class="text-amber-600 focus:ring-amber-500" />
+                  <span class="text-xs font-extrabold text-carifi-navy uppercase">🔵 Media</span>
+                  <input type="radio" name="intensityLevel" value="medium" onchange="handleIntensityChange()" checked class="text-carifi-navy focus:ring-carifi-navy" />
                 </div>
                 <span class="text-xs font-semibold text-slate-800 mt-1">Promemoria Costante</span>
                 <span class="text-[11px] text-slate-500 mt-0.5">Ripete l'avviso periodicamente finché non confermi.</span>
               </label>
 
               <!-- Intensità Alta / Insistente -->
-              <label class="relative flex flex-col p-3 rounded-xl border-2 border-slate-200 bg-white cursor-pointer hover:border-red-400 transition has-[:checked]:border-red-600 has-[:checked]:bg-red-50/50">
+              <label class="relative flex flex-col p-3 rounded-xl border-2 border-slate-200 bg-white cursor-pointer hover:border-red-400 transition has-[:checked]:border-carifi-crimson has-[:checked]:bg-red-50/50">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-extrabold text-red-700 uppercase">🔴 Alta (Insistente)</span>
-                  <input type="radio" name="intensityLevel" value="high" onchange="handleIntensityChange()" class="text-red-600 focus:ring-red-500" />
+                  <span class="text-xs font-extrabold text-carifi-crimson uppercase">🔴 Alta (Insistente)</span>
+                  <input type="radio" name="intensityLevel" value="high" onchange="handleIntensityChange()" class="text-carifi-crimson focus:ring-carifi-crimson" />
                 </div>
                 <span class="text-xs font-semibold text-slate-800 mt-1">Allarme Continuo</span>
                 <span class="text-[11px] text-slate-500 mt-0.5">Suona e invia notifiche a raffica finché non premi Conferma!</span>
@@ -474,12 +498,12 @@
           </div>
 
           <!-- Frequenza di ripetizione (per Intensità Media e Alta) -->
-          <div id="repeatIntervalWrapper" class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-3 rounded-lg border border-slate-200">
+          <div id="repeatIntervalWrapper" class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-3.5 rounded-xl border border-slate-200">
             <div>
-              <span class="text-xs font-bold text-slate-800 block">Frequenza ripetizione solleciti non confermati:</span>
+              <span class="text-xs font-bold text-carifi-navy block">Frequenza ripetizione solleciti non confermati:</span>
               <span class="text-[11px] text-slate-500">Ogni quanto tempo l'app deve inviarti nuovamente la notifica?</span>
             </div>
-            <select id="itemRepeatMinutes" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none">
+            <select id="itemRepeatMinutes" class="px-3 py-2 text-xs font-bold rounded-xl border border-slate-300 bg-slate-50 text-carifi-navy focus:outline-none">
               <option value="1">Ogni 1 minuto (Modalità Emergenza / Test)</option>
               <option value="5">Ogni 5 minuti (Molto Insistente)</option>
               <option value="15">Ogni 15 minuti (Insistente Studio)</option>
@@ -493,16 +517,16 @@
 
         <!-- Note aggiuntive -->
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Note Studio / Istruzioni F24 / IBAN</label>
-          <textarea id="itemNotes" rows="2" placeholder="Es. Inviare delega F24 su WhatsApp al cliente entro le ore 11:00..." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+          <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Note Studio / Istruzioni F24 / IBAN</label>
+          <textarea id="itemNotes" rows="2" placeholder="Inserisci eventuali annotazioni operative per lo studio..." class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-carifi-navy focus:outline-none"></textarea>
         </div>
 
         <!-- Footer Azioni Modale -->
-        <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
-          <button type="button" onclick="closeItemModal()" class="px-4 py-2.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">
+        <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
+          <button type="button" onclick="closeItemModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">
             Annulla
           </button>
-          <button type="submit" class="px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-900 hover:bg-slate-800 text-amber-400 shadow-md transition flex items-center gap-1.5">
+          <button type="submit" class="btn-carifi-crimson px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5">
             <i data-lucide="check" class="w-4 h-4"></i>
             <span>Salva e Attiva Notifiche</span>
           </button>
@@ -515,19 +539,19 @@
   <!-- ========================================================================
        MODALE 2: GENERATORE AUTOMATICO PIANO RATEIZZI
   ========================================================================= -->
-  <div id="planModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="planModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto">
-      <div class="bg-indigo-950 text-white px-5 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="p-2 rounded-lg bg-indigo-500/20 text-indigo-300">
+      <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between border-b-2 border-carifi-crimson">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-white/10 text-red-300 border border-white/15">
             <i data-lucide="layers" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold">Generatore Automatico Piano Rateizzi</h3>
-            <p class="text-xs text-indigo-200">Crea tutte le rate mensili o trimestrali di un cliente in un solo clic</p>
+            <h3 class="font-carifi-serif text-base sm:text-lg font-bold tracking-wide">Generatore Piano Rateizzi</h3>
+            <p class="text-[11px] text-slate-300">Crea tutte le rate mensili o trimestrali di un cliente in un solo clic</p>
           </div>
         </div>
-        <button onclick="closeInstallmentPlanModal()" class="text-indigo-300 hover:text-white p-1">
+        <button onclick="closeInstallmentPlanModal()" class="text-slate-300 hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -535,52 +559,52 @@
       <form onsubmit="generateInstallmentPlan(event)" class="p-5 space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cliente / Ragione Sociale *</label>
-            <input type="text" id="planClient" required placeholder="Es. Edilizia Sud S.r.l." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Cliente / Ragione Sociale *</label>
+            <input type="text" id="planClient" required placeholder="Nome cliente o società..." class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300" />
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Ente / Tipologia Piano *</label>
-            <input type="text" id="planTitle" required placeholder="Es. Rateizzo Avviso Bonario AdE" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Ente / Tipologia Piano *</label>
+            <input type="text" id="planTitle" required placeholder="Es. Rateizzo Avviso Bonario AdE" class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Numero Totale Rate *</label>
-            <input type="number" id="planCount" min="2" max="120" value="8" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 font-bold" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Numero Totale Rate *</label>
+            <input type="number" id="planCount" min="2" max="120" value="8" required class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 font-bold" />
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cadenza Rate *</label>
-            <select id="planFrequency" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white">
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Cadenza Rate *</label>
+            <select id="planFrequency" class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 bg-white">
               <option value="monthly">Mensile (ogni mese)</option>
               <option value="quarterly" selected>Trimestrale (ogni 3 mesi)</option>
               <option value="bimonthly">Bimestrale (ogni 2 mesi)</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Importo Singola Rata (€)</label>
-            <input type="number" step="0.01" id="planAmount" placeholder="Es. 620.00" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Importo Singola Rata (€)</label>
+            <input type="number" step="0.01" id="planAmount" placeholder="0,00" class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Scadenza 1ª Rata *</label>
-            <input type="datetime-local" id="planFirstDate" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Scadenza 1ª Rata *</label>
+            <input type="datetime-local" id="planFirstDate" required class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300" />
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Intensità Notifiche per le Rate *</label>
-            <select id="planIntensity" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white font-semibold">
+            <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Intensità Notifiche per le Rate *</label>
+            <select id="planIntensity" class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 bg-white font-semibold">
               <option value="high" selected>🔴 Alta / Insistente (ogni 15 min)</option>
-              <option value="medium">🟡 Media (ogni ora)</option>
+              <option value="medium">🔵 Media (ogni ora)</option>
               <option value="low">🟢 Bassa (avviso singolo)</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Anticipo Notifica rispetto a ogni rata</label>
-          <select id="planLeadMinutes" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white">
+          <label class="block text-xs font-bold uppercase text-carifi-navy mb-1">Anticipo Notifica rispetto a ogni rata</label>
+          <select id="planLeadMinutes" class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 bg-white">
             <option value="1440">Inizia ad avvisare 1 giorno prima di ogni rata</option>
             <option value="4320" selected>Inizia ad avvisare 3 giorni prima di ogni rata</option>
             <option value="10080">Inizia ad avvisare 7 giorni prima di ogni rata</option>
@@ -588,11 +612,11 @@
           </select>
         </div>
 
-        <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
-          <button type="button" onclick="closeInstallmentPlanModal()" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">
+        <div class="pt-3 border-t border-slate-200 flex justify-end gap-2.5">
+          <button type="button" onclick="closeInstallmentPlanModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
             Annulla
           </button>
-          <button type="submit" class="px-5 py-2.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md">
+          <button type="submit" class="btn-carifi-crimson px-5 py-2.5 rounded-xl text-xs font-bold">
             Genera Tutte le Rate
           </button>
         </div>
@@ -603,20 +627,20 @@
   <!-- ========================================================================
        MODALE 3: IMPOSTAZIONI CLOUD (SINCRONIZZAZIONE PC WINDOWS ↔ iOS) & TELEGRAM
   ========================================================================= -->
-  <div id="settingsModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="settingsModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
       
-      <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-2.5">
-          <div class="p-2 rounded-lg bg-sky-500/20 text-sky-400">
+      <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between shrink-0 border-b-2 border-carifi-crimson">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-white/10 text-sky-300 border border-white/15">
             <i data-lucide="cloud-cog" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold">Sincronizzazione Istantanea PC Windows ↔ iPhone (iOS) & Notifiche</h3>
-            <p class="text-xs text-slate-400">Configura Cloud Realtime, Notifiche Push iOS e Bot Telegram dello Studio Carifi</p>
+            <h3 class="font-carifi-serif text-base sm:text-lg font-bold tracking-wide">Sincronizzazione Cloud PC ↔ iPhone & Notifiche</h3>
+            <p class="text-[11px] text-slate-300">Studio Carifi Commercialista — Ordine dei Dottori Commercialisti di Nola</p>
           </div>
         </div>
-        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white p-1">
+        <button onclick="closeSettingsModal()" class="text-slate-300 hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -624,13 +648,13 @@
       <div class="p-5 space-y-6 overflow-y-auto flex-1 text-sm">
 
         <!-- 1. STATO CONNETTIVITÀ CLOUD REALTIME (SUPABASE) -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
+            <h4 class="font-bold text-carifi-navy flex items-center gap-2">
+              <i data-lucide="database" class="w-4 h-4 text-carifi-crimson"></i>
               <span>1. Database Cloud Realtime (Sincronizzazione Istantanea PC ↔ iPhone)</span>
             </h4>
-            <span id="cloudModalBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+            <span id="cloudModalBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-carifi-navy">
               Modalità Locale Attiva
             </span>
           </div>
@@ -641,21 +665,21 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Project URL</label>
-              <input type="url" id="cfgSupabaseUrl" placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white font-mono" />
+              <input type="url" id="cfgSupabaseUrl" placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono" />
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Anon Public Key</label>
-              <input type="password" id="cfgSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white font-mono" />
+              <input type="password" id="cfgSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono" />
             </div>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-            <button type="button" onclick="copySupabaseSql()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">
+            <button type="button" onclick="copySupabaseSql()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-300 text-carifi-navy hover:bg-slate-100">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i>
               <span>Copia Script SQL Creazione Tabella</span>
             </button>
             <div class="flex items-center gap-2">
-              <button type="button" onclick="syncLocalToCloud()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white">
+              <button type="button" onclick="syncLocalToCloud()" class="btn-carifi-navy px-4 py-2 rounded-xl text-xs font-semibold">
                 Salva e Connetti Cloud Realtime
               </button>
             </div>
@@ -663,34 +687,34 @@
         </div>
 
         <!-- 2. NOTIFICHE PUSH DIRETTE SU IPHONE & WINDOWS TRAMITE BOT TELEGRAM STUDIO -->
-        <div class="bg-sky-50/60 p-4 rounded-xl border border-sky-200 space-y-3">
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="send" class="w-4 h-4 text-sky-600"></i>
+            <h4 class="font-bold text-carifi-navy flex items-center gap-2">
+              <i data-lucide="send" class="w-4 h-4 text-carifi-crimson"></i>
               <span>2. Notifiche Push Garantite su iOS e Windows (Canale Telegram Studio)</span>
             </h4>
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-sky-100 text-sky-800">Consigliato per iOS</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-carifi-crimson border border-red-200">Consigliato per iOS</span>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed">
-            Oltre alle notifiche del browser e all'allarme sonoro, puoi collegare un Bot Telegram gratuito dello Studio Carifi per ricevere i solleciti su iPhone anche quando il telefono è in tasca o in modalità risparmio energetico.
+            Oltre alle notifiche del browser e all'allarme sonoro, puoi collegare un Bot Telegram gratuito dello Studio Carifi per ricevere i solleciti su iPhone anche quando il telefono è in blocco schermo.
           </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Telegram Bot Token (da @BotFather)</label>
-              <input type="password" id="cfgTelegramToken" placeholder="123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white font-mono" />
+              <input type="password" id="cfgTelegramToken" placeholder="123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono" />
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Telegram Chat ID (tuo o del gruppo Studio)</label>
-              <input type="text" id="cfgTelegramChatId" placeholder="Es. 987654321" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white font-mono" />
+              <input type="text" id="cfgTelegramChatId" placeholder="Es. 987654321" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono" />
             </div>
           </div>
 
           <div class="flex justify-end gap-2">
-            <button type="button" onclick="testTelegramNotification()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-sky-300 text-sky-700 hover:bg-sky-100">
+            <button type="button" onclick="testTelegramNotification()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-300 text-carifi-navy hover:bg-slate-100">
               Invia Messaggio di Prova
             </button>
-            <button type="button" onclick="saveTelegramConfig()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white">
+            <button type="button" onclick="saveTelegramConfig()" class="btn-carifi-crimson px-4 py-2 rounded-xl text-xs font-semibold">
               Salva Configurazione Telegram
             </button>
           </div>
@@ -698,45 +722,45 @@
 
         <!-- 3. GUIDA INSTALLAZIONE SU PC WINDOWS E IPHONE (iOS) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
-            <h5 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-              <i data-lucide="monitor" class="w-4 h-4 text-blue-600"></i>
+          <div class="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
+            <h5 class="font-bold text-xs uppercase tracking-wider text-carifi-navy flex items-center gap-1.5">
+              <i data-lucide="monitor" class="w-4 h-4 text-carifi-crimson"></i>
               <span>Installazione su PC Windows</span>
             </h5>
             <ol class="text-xs text-slate-600 space-y-1.5 list-decimal list-inside">
-              <li>Apri questa applicazione con <strong>Google Chrome</strong> o <strong>Microsoft Edge</strong>.</li>
-              <li>Clicca sull'icona <strong>"Installa Memo Studio Carifi"</strong> nella barra degli indirizzi (in alto a destra).</li>
-              <li>L'app verrà aggiunta sul <strong>Desktop di Windows</strong> e nella Barra delle Applicazioni e potrà inviare notifiche di sistema.</li>
+              <li>Apri questa applicazione con <strong>Brave</strong>, <strong>Chrome</strong> o <strong>Edge</strong>.</li>
+              <li>Clicca sull'icona <strong>"Installa Studio Carifi"</strong> nella barra degli indirizzi (in alto a destra).</li>
+              <li>L'app verrà aggiunta sul <strong>Desktop di Windows</strong> e nella Barra delle Applicazioni.</li>
             </ol>
           </div>
 
-          <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
-            <h5 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-              <i data-lucide="smartphone" class="w-4 h-4 text-amber-600"></i>
+          <div class="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
+            <h5 class="font-bold text-xs uppercase tracking-wider text-carifi-navy flex items-center gap-1.5">
+              <i data-lucide="smartphone" class="w-4 h-4 text-carifi-crimson"></i>
               <span>Installazione su iPhone (iOS)</span>
             </h5>
             <ol class="text-xs text-slate-600 space-y-1.5 list-decimal list-inside">
               <li>Apri il link web dell'app da <strong>Safari</strong> su iPhone.</li>
-              <li>Tocca il pulsante <strong>Condividi</strong> (quadrato con freccia verso l'alto in basso).</li>
+              <li>Tocca il pulsante <strong>Condividi</strong> (quadrato con freccia verso l'alto).</li>
               <li>Scorri e seleziona <strong>"Aggiungi alla schermata Home"</strong>.</li>
-              <li>Aprila dall'icona sulla Home e premi <strong>"Attiva Notifiche"</strong>.</li>
+              <li>Aprila dall'icona ufficiale sulla Home e premi <strong>"Attiva Notifiche"</strong>.</li>
             </ol>
           </div>
         </div>
 
-        <!-- 4. BACKUP / ESPORTAZIONE DATI STUDIO -->
+        <!-- 4. BACKUP / ESPORTAZIONE E PULIZIA DATI STUDIO -->
         <div class="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <button type="button" onclick="exportDataJson()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">
+            <button type="button" onclick="exportDataJson()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy">
               Esporta Backup JSON
             </button>
-            <label class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer">
+            <label class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy cursor-pointer">
               <span>Importa Backup</span>
               <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
             </label>
           </div>
-          <button type="button" onclick="resetDemoData()" class="px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50">
-            Ripristina Dati Esempio
+          <button type="button" onclick="clearAllItems()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-carifi-crimson hover:bg-red-50 border border-transparent hover:border-red-200 transition">
+            Svuota Tutte le Scadenze
           </button>
         </div>
 
