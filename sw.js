@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studio-carifi-memo-v2';
+const CACHE_NAME = 'studio-carifi-memo-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

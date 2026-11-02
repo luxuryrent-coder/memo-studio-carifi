@@ -42,9 +42,8 @@
     };
   </script>
 
-  <!-- Lucide Icons & Supabase Client per Sincronizzazione Realtime -->
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -68,9 +67,9 @@
                 <h1 class="font-carifi-serif text-xl sm:text-2xl font-bold tracking-wider text-white leading-none">
                   STUDIO CARIFI
                 </h1>
-                <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 border border-white/15 cursor-pointer hover:bg-white/15 transition" onclick="openSettingsModal()" title="Clicca per configurare la sincronizzazione Cloud PC/iPhone">
+                <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 cursor-pointer hover:bg-emerald-500/30 transition" onclick="openSettingsModal()" title="Sincronizzazione automatica PC e Mobile attiva">
                   <span id="syncDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span id="syncStatusText">Sincronizzato</span>
+                  <span id="syncStatusText">Cloud Istantaneo Attivo (PC ↔ Mobile)</span>
                 </span>
               </div>
 
@@ -91,8 +90,8 @@
           </div>
 
           <!-- Pulsante Impostazioni su Mobile -->
-          <button onclick="openSettingsModal()" class="lg:hidden p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/15 transition" title="Impostazioni Sincronizzazione e Notifiche">
-            <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+          <button onclick="openSettingsModal()" class="lg:hidden p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/15 transition" title="Impostazioni Telegram e Notifiche">
+            <i data-lucide="send" class="w-5 h-5 text-sky-300"></i>
           </button>
         </div>
 
@@ -118,9 +117,9 @@
             <span>Nuovo Appuntamento / Rata</span>
           </button>
 
-          <button onclick="openSettingsModal()" class="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition" title="Sincronizzazione Cloud iOS/Windows e Notifiche">
-            <i data-lucide="cloud-cog" class="w-4 h-4 text-sky-300"></i>
-            <span>Cloud & iOS</span>
+          <button onclick="openSettingsModal()" class="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition" title="Collega Bot Telegram e gestisci sincronizzazione">
+            <i data-lucide="send" class="w-4 h-4 text-sky-300"></i>
+            <span>Bot Telegram & Sync</span>
           </button>
         </div>
 
@@ -293,7 +292,7 @@
           NESSUN APPUNTAMENTO O RATEIZZO IN AGENDA
         </h3>
         <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-2 leading-relaxed">
-          L'agenda dello <strong>Studio Carifi Commercialista</strong> è pronta. Inserisci un nuovo appuntamento o genera un piano di rateizzazione per attivare il monitoraggio e le notifiche su PC e iPhone.
+          La sincronizzazione automatica tra <strong>PC Windows</strong> e <strong>iPhone</strong> è attiva. Ogni appuntamento o rateizzo che inserisci comparirà istantaneamente su tutti i dispositivi dello <strong>Studio Carifi</strong>.
         </p>
         <div class="mt-6 flex flex-wrap justify-center gap-3">
           <button onclick="openItemModal()" class="btn-carifi-crimson px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold inline-flex items-center gap-2">
@@ -328,8 +327,8 @@
       <span class="text-[10px] font-medium">Agenda</span>
     </button>
     <button onclick="openSettingsModal()" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg hover:text-white">
-      <i data-lucide="cloud-cog" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">Cloud/iOS</span>
+      <i data-lucide="send" class="w-5 h-5 text-sky-300"></i>
+      <span class="text-[10px] font-medium">Telegram</span>
     </button>
   </nav>
 
@@ -347,7 +346,7 @@
           </div>
           <div>
             <h3 id="itemModalTitle" class="font-carifi-serif text-base sm:text-lg font-bold tracking-wide">Nuovo Appuntamento o Rateizzo</h3>
-            <p class="text-[11px] text-slate-300">Studio Carifi Commercialista — Scadenza, anticipo e intensità notifiche</p>
+            <p class="text-[11px] text-slate-300">Studio Carifi Commercialista — Sincronizzato all'istante su PC e Mobile</p>
           </div>
         </div>
         <button onclick="closeItemModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition">
@@ -528,7 +527,7 @@
           </button>
           <button type="submit" class="btn-carifi-crimson px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5">
             <i data-lucide="check" class="w-4 h-4"></i>
-            <span>Salva e Attiva Notifiche</span>
+            <span>Salva e Sincronizza Subito</span>
           </button>
         </div>
 
@@ -617,7 +616,7 @@
             Annulla
           </button>
           <button type="submit" class="btn-carifi-crimson px-5 py-2.5 rounded-xl text-xs font-bold">
-            Genera Tutte le Rate
+            Genera e Sincronizza Tutte le Rate
           </button>
         </div>
       </form>
@@ -625,7 +624,7 @@
   </div>
 
   <!-- ========================================================================
-       MODALE 3: IMPOSTAZIONI CLOUD (SINCRONIZZAZIONE PC WINDOWS ↔ iOS) & TELEGRAM
+       MODALE 3: BOT TELEGRAM 1-CLICK & SINCRONIZZAZIONE AUTOMATICA PC ↔ IPHONE
   ========================================================================= -->
   <div id="settingsModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
@@ -633,10 +632,10 @@
       <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between shrink-0 border-b-2 border-carifi-crimson">
         <div class="flex items-center gap-3">
           <div class="p-2 rounded-xl bg-white/10 text-sky-300 border border-white/15">
-            <i data-lucide="cloud-cog" class="w-5 h-5"></i>
+            <i data-lucide="send" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="font-carifi-serif text-base sm:text-lg font-bold tracking-wide">Sincronizzazione Cloud PC ↔ iPhone & Notifiche</h3>
+            <h3 class="font-carifi-serif text-base sm:text-lg font-bold tracking-wide">Sincronizzazione Automatica & Bot Telegram Studio</h3>
             <p class="text-[11px] text-slate-300">Studio Carifi Commercialista — Ordine dei Dottori Commercialisti di Nola</p>
           </div>
         </div>
@@ -647,108 +646,110 @@
 
       <div class="p-5 space-y-6 overflow-y-auto flex-1 text-sm">
 
-        <!-- 1. STATO CONNETTIVITÀ CLOUD REALTIME (SUPABASE) -->
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-          <div class="flex items-center justify-between">
+        <!-- 1. STATO SINCRONIZZAZIONE AUTOMATICA PC <-> MOBILE (GIÀ ATTIVA DI DEFAULT) -->
+        <div class="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <h4 class="font-bold text-carifi-navy flex items-center gap-2">
-              <i data-lucide="database" class="w-4 h-4 text-carifi-crimson"></i>
-              <span>1. Database Cloud Realtime (Sincronizzazione Istantanea PC ↔ iPhone)</span>
+              <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
+              <span>1. Sincronizzazione Istantanea PC ↔ Mobile (Attiva in Automatico)</span>
             </h4>
-            <span id="cloudModalBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-carifi-navy">
-              Modalità Locale Attiva
+            <span id="cloudModalBadge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600 text-white shadow-xs">
+              Connesso in Tempo Reale
             </span>
           </div>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Inserendo l'URL e la chiave gratuita del tuo progetto <strong>Supabase</strong>, ogni appuntamento o rateizzo aggiunto dal PC dell'ufficio apparirà <strong>in meno di 1 secondo</strong> sull'iPhone e viceversa.
+          <p class="text-xs text-slate-700 leading-relaxed">
+            <strong>Non devi configurare alcun database:</strong> l'app dello Studio Carifi utilizza un canale Cloud Realtime già pre-collegato tra PC e iPhone. Ogni appuntamento aggiunto o modificato su un dispositivo compare sull'altro in <strong>meno di 1 secondo</strong>.
           </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Project URL</label>
-              <input type="url" id="cfgSupabaseUrl" placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Anon Public Key</label>
-              <input type="password" id="cfgSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono" />
-            </div>
-          </div>
-
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-            <button type="button" onclick="copySupabaseSql()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-300 text-carifi-navy hover:bg-slate-100">
-              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-              <span>Copia Script SQL Creazione Tabella</span>
+          <div class="flex items-center justify-end pt-1">
+            <button type="button" onclick="forceCloudSyncNow()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-100 transition">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Forza Allineamento Immediato</span>
             </button>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="syncLocalToCloud()" class="btn-carifi-navy px-4 py-2 rounded-xl text-xs font-semibold">
-                Salva e Connetti Cloud Realtime
-              </button>
-            </div>
           </div>
         </div>
 
-        <!-- 2. NOTIFICHE PUSH DIRETTE SU IPHONE & WINDOWS TRAMITE BOT TELEGRAM STUDIO -->
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-          <div class="flex items-center justify-between">
+        <!-- 2. COLLEGAMENTO AUTOMATICO BOT TELEGRAM IN 2 PASSI -->
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <h4 class="font-bold text-carifi-navy flex items-center gap-2">
               <i data-lucide="send" class="w-4 h-4 text-carifi-crimson"></i>
-              <span>2. Notifiche Push Garantite su iOS e Windows (Canale Telegram Studio)</span>
+              <span>2. Notifiche Telegram su iPhone e PC (Collegamento Guidato Automatico)</span>
             </h4>
-            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-carifi-crimson border border-red-200">Consigliato per iOS</span>
+            <span id="telegramStatusPill" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">
+              In attesa di collegamento
+            </span>
           </div>
+
           <p class="text-xs text-slate-600 leading-relaxed">
-            Oltre alle notifiche del browser e all'allarme sonoro, puoi collegare un Bot Telegram gratuito dello Studio Carifi per ricevere i solleciti su iPhone anche quando il telefono è in blocco schermo.
+            Per motivi di sicurezza di Telegram, il Bot deve essere generato dal tuo account Telegram personale cliccando sul link ufficiale qui sotto. Una volta incollato il codice (Token), <strong>l'app creerà da sola il tuo Link Diretto e rileverà automaticamente il tuo telefono!</strong>
           </p>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Telegram Bot Token (da @BotFather)</label>
-              <input type="password" id="cfgTelegramToken" placeholder="123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Telegram Chat ID (tuo o del gruppo Studio)</label>
-              <input type="text" id="cfgTelegramChatId" placeholder="Es. 987654321" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono" />
+          <!-- Passo A -->
+          <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="text-xs font-extrabold text-carifi-navy uppercase">Passo 1 — Genera il Token su @BotFather (30 secondi)</span>
+                <p class="text-[11px] text-slate-500 mt-0.5">
+                  Clicca il pulsante a fianco, premi <strong>Avvia</strong> su Telegram, scrivi <code>/newbot</code>, scegli un nome (es. <em>Studio Carifi</em>) e un username che finisce per <code>bot</code> (es. <em>StudioCarifiNolaBot</em>).
+                </p>
+              </div>
+              <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" class="btn-carifi-navy shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                <span>Apri @BotFather</span>
+              </a>
             </div>
           </div>
 
-          <div class="flex justify-end gap-2">
-            <button type="button" onclick="testTelegramNotification()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-300 text-carifi-navy hover:bg-slate-100">
-              Invia Messaggio di Prova
-            </button>
-            <button type="button" onclick="saveTelegramConfig()" class="btn-carifi-crimson px-4 py-2 rounded-xl text-xs font-semibold">
-              Salva Configurazione Telegram
-            </button>
+          <!-- Passo B -->
+          <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-3">
+            <span class="text-xs font-extrabold text-carifi-navy uppercase block">Passo 2 — Incolla qui il Token ricevuto e ottieni il tuo Link Diretto</span>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                id="cfgTelegramToken"
+                placeholder="Incolla qui il Token (es. 7123456789:AAHdqTcvCH1vGWJxfSeofSAs0...)"
+                class="flex-1 px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy"
+              />
+              <button type="button" onclick="autoConnectTelegramBot()" class="btn-carifi-crimson px-4 py-2 rounded-xl text-xs font-bold shrink-0">
+                Genera Link & Collega Bot
+              </button>
+            </div>
+
+            <!-- Box Link Diretto al Bot generato automaticamente -->
+            <div id="botDirectLinkBox" class="hidden p-3.5 rounded-xl bg-sky-50 border border-sky-200 space-y-2">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <span class="text-xs font-extrabold text-sky-950 block">🎉 Bot Riconosciuto! Ora clicca sul link del tuo Bot e premi "Avvia":</span>
+                  <span id="botDetectionHint" class="text-[11px] text-sky-800 block mt-0.5">
+                    Appena premi "Avvia" dentro Telegram, questa pagina rileverà il tuo iPhone/PC in automatico senza inserire altri codici!
+                  </span>
+                </div>
+                <a id="botDirectLinkAnchor" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-sky-600 hover:bg-sky-500 text-white shadow-sm inline-flex items-center gap-1.5 shrink-0">
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                  <span id="botDirectLinkText">Apri il tuo Bot su Telegram</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Campo Chat ID (compilato in automatico dal rilevatore o modificabile manualmente) -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+              <div class="flex items-center gap-2 flex-1">
+                <label class="text-[11px] font-bold text-slate-500 shrink-0">Chat ID Collegato:</label>
+                <input type="text" id="cfgTelegramChatId" placeholder="Rilevato in automatico appena premi Avvia sul Bot..." class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 font-mono" />
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="testTelegramNotification()" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy">
+                  Invia Notifica di Prova
+                </button>
+                <button type="button" onclick="saveTelegramConfig()" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-carifi-navy text-white">
+                  Salva
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- 3. GUIDA INSTALLAZIONE SU PC WINDOWS E IPHONE (iOS) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
-            <h5 class="font-bold text-xs uppercase tracking-wider text-carifi-navy flex items-center gap-1.5">
-              <i data-lucide="monitor" class="w-4 h-4 text-carifi-crimson"></i>
-              <span>Installazione su PC Windows</span>
-            </h5>
-            <ol class="text-xs text-slate-600 space-y-1.5 list-decimal list-inside">
-              <li>Apri questa applicazione con <strong>Brave</strong>, <strong>Chrome</strong> o <strong>Edge</strong>.</li>
-              <li>Clicca sull'icona <strong>"Installa Studio Carifi"</strong> nella barra degli indirizzi (in alto a destra).</li>
-              <li>L'app verrà aggiunta sul <strong>Desktop di Windows</strong> e nella Barra delle Applicazioni.</li>
-            </ol>
-          </div>
-
-          <div class="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
-            <h5 class="font-bold text-xs uppercase tracking-wider text-carifi-navy flex items-center gap-1.5">
-              <i data-lucide="smartphone" class="w-4 h-4 text-carifi-crimson"></i>
-              <span>Installazione su iPhone (iOS)</span>
-            </h5>
-            <ol class="text-xs text-slate-600 space-y-1.5 list-decimal list-inside">
-              <li>Apri il link web dell'app da <strong>Safari</strong> su iPhone.</li>
-              <li>Tocca il pulsante <strong>Condividi</strong> (quadrato con freccia verso l'alto).</li>
-              <li>Scorri e seleziona <strong>"Aggiungi alla schermata Home"</strong>.</li>
-              <li>Aprila dall'icona ufficiale sulla Home e premi <strong>"Attiva Notifiche"</strong>.</li>
-            </ol>
-          </div>
-        </div>
-
-        <!-- 4. BACKUP / ESPORTAZIONE E PULIZIA DATI STUDIO -->
+        <!-- 3. BACKUP / ESPORTAZIONE E PULIZIA DATI STUDIO -->
         <div class="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2">
             <button type="button" onclick="exportDataJson()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy">

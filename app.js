@@ -1,28 +1,38 @@
 /**
  * STUDIO CARIFI COMMERCIALISTA — ORDINE DEI DOTTORI COMMERCIALISTI DI NOLA
- * Motore Applicativo: Gestione Appuntamenti, Scadenzario Rateizzi,
- * Sincronizzazione Cloud Realtime (PC Windows <-> iPhone iOS) e Notifiche ad Intensità Variabile.
+ * Motore Applicativo:
+ *  - Sincronizzazione Cloud Automatica e Istantanea Zero-Config (PC Windows <-> iPhone iOS)
+ *  - Collegamento Guidato Automatico Bot Telegram (Generazione Link Diretto + Rilevamento Chat ID)
+ *  - Gestione Appuntamenti, Scadenzario Rateizzi e Notifiche ad Intensità Variabile
  */
 
-const STORAGE_KEY_ITEMS = 'studio_carifi_items_v1';
-const STORAGE_KEY_CONFIG = 'studio_carifi_config_v1';
+const STORAGE_KEY_ITEMS = 'studio_carifi_items_v2';
+const STORAGE_KEY_DELETED = 'studio_carifi_deleted_v2';
+const STORAGE_KEY_CONFIG = 'studio_carifi_config_v2';
+
+// Canale Cloud Realtime dedicato allo Studio Carifi (Zero-Config, attivo subito su PC e iPhone)
+const CLOUD_SYNC_TOPIC = 'studio_carifi_nola_v2_sync_8390af28';
+const CLOUD_SYNC_BASE_URL = `https://ntfy.sh/${CLOUD_SYNC_TOPIC}`;
+
+// Identificativo univoco della sessione dispositivo corrente
+const DEVICE_SESSION_ID = 'dev-' + Math.random().toString(36).substring(2, 10);
 
 // Stato globale dell'applicazione
 let items = [];
+let deletedIds = {}; // mappa { [itemId]: isoTimestamp } per sincronizzare le cancellazioni tra PC e Mobile
 let currentFilter = 'all';
-let supabaseClient = null;
-let realtimeChannel = null;
+let cloudEventSource = null;
 let audioCtx = null;
+let telegramPollTimer = null;
 
 // Canale broadcast per sincronizzazione istantanea tra schede aperte sullo stesso dispositivo
 const localBroadcast = ('BroadcastChannel' in window) ? new BroadcastChannel('studio_carifi_sync') : null;
 
-// Configurazione persistente Cloud & Notifiche
+// Configurazione persistente
 let appConfig = {
-  supabaseUrl: '',
-  supabaseKey: '',
   telegramToken: '',
-  telegramChatId: ''
+  telegramChatId: '',
+  telegramBotUsername: ''
 };
 
 // ============================================================================
@@ -33,7 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadItems();
   initServiceWorker();
   checkNotificationPermissionUI();
-  initSupabaseRealtime();
+
+  // Avvia subito la sincronizzazione Cloud Automatica PC <-> Mobile
+  initAutoCloudSync();
 
   // Orologio in tempo reale nell'header
   updateLiveClock();
@@ -55,20 +67,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Ascolto sincronizzazione locale tra schede
+  // Ascolto sincronizzazione locale tra schede dello stesso browser
   if (localBroadcast) {
     localBroadcast.onmessage = (event) => {
       if (event.data && event.data.type === 'ITEMS_UPDATED') {
-        const raw = localStorage.getItem(STORAGE_KEY_ITEMS);
-        if (raw) {
-          items = JSON.parse(raw);
-          renderAll();
-        }
+        loadItems();
+        loadConfig();
+        renderAll();
       }
     };
   }
 
+  // Quando l'app su iPhone o PC torna in primo piano, riallinea subito dal Cloud
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      pullCloudHistoryAndMerge(false);
+    }
+  });
+
   renderAll();
+  updateTelegramUIState();
 });
 
 // ============================================================================
@@ -100,11 +118,11 @@ function updateLiveClock() {
 }
 
 // ============================================================================
-// GESTIONE DATI LOCALI (NESSUN DATO DI PROVA + RIMOZIONE AUTOMATICA VECCHI DEMO)
+// GESTIONE DATI LOCALI (NESSUN DATO DI PROVA)
 // ============================================================================
 function loadConfig() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
+    const saved = localStorage.getItem(STORAGE_KEY_CONFIG) || localStorage.getItem('studio_carifi_config_v1');
     if (saved) {
       appConfig = { ...appConfig, ...JSON.parse(saved) };
     }
@@ -119,17 +137,19 @@ function saveConfig() {
 
 function loadItems() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY_ITEMS);
+    // Pulizia vecchia chiave v1 se conteneva demo
+    const savedDeleted = localStorage.getItem(STORAGE_KEY_DELETED);
+    if (savedDeleted) {
+      deletedIds = JSON.parse(savedDeleted) || {};
+    }
+
+    const saved = localStorage.getItem(STORAGE_KEY_ITEMS) || localStorage.getItem('studio_carifi_items_v1');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Rimuove automaticamente tutti gli eventuali appuntamenti di prova ("demo-*") presenti in memoria
-      const cleaned = Array.isArray(parsed)
-        ? parsed.filter((item) => item && item.id && !String(item.id).startsWith('demo-'))
+      items = Array.isArray(parsed)
+        ? parsed.filter((item) => item && item.id && !String(item.id).startsWith('demo-') && !deletedIds[item.id])
         : [];
-      items = cleaned;
-      if (cleaned.length !== (Array.isArray(parsed) ? parsed.length : 0)) {
-        saveItemsLocally(false);
-      }
+      saveItemsLocally(false);
     } else {
       items = [];
       saveItemsLocally(false);
@@ -142,140 +162,361 @@ function loadItems() {
 
 function saveItemsLocally(broadcast = true) {
   localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+  localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deletedIds));
   if (broadcast && localBroadcast) {
     localBroadcast.postMessage({ type: 'ITEMS_UPDATED' });
   }
 }
 
 // ============================================================================
-// SINCRONIZZAZIONE REALTIME CLOUD (SUPABASE: PC WINDOWS <-> iOS)
+// SINCRONIZZAZIONE CLOUD AUTOMATICA ISTANTANEA (ZERO-CONFIG PC <-> MOBILE)
 // ============================================================================
-async function initSupabaseRealtime() {
+async function initAutoCloudSync() {
+  setSyncStatusUI('connecting');
+  await pullCloudHistoryAndMerge(false);
+  connectCloudRealtimeStream();
+}
+
+function setSyncStatusUI(state) {
   const statusBadge = document.getElementById('syncStatusText');
   const syncDot = document.getElementById('syncDot');
   const modalBadge = document.getElementById('cloudModalBadge');
 
-  if (!appConfig.supabaseUrl || !appConfig.supabaseKey || !window.supabase) {
-    if (statusBadge) statusBadge.textContent = 'Locale (Configura Cloud)';
-    if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-red-400';
+  if (state === 'connected') {
+    if (statusBadge) statusBadge.textContent = 'Cloud Istantaneo Attivo (PC ↔ Mobile)';
+    if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
     if (modalBadge) {
-      modalBadge.textContent = 'Modalità Locale Attiva';
-      modalBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-carifi-navy';
+      modalBadge.textContent = 'Connesso in Tempo Reale';
+      modalBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600 text-white shadow-xs';
     }
+  } else if (state === 'connecting') {
+    if (statusBadge) statusBadge.textContent = 'Connessione Cloud in corso...';
+    if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+  } else {
+    if (statusBadge) statusBadge.textContent = 'Riconnessione automatica...';
+    if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+  }
+}
+
+/**
+ * Scarica lo storico recente dal canale Cloud e unisce gli appuntamenti/rateizzi
+ * usando il timestamp updatedAt e la lista deletedIds (Last-Write-Wins)
+ */
+async function pullCloudHistoryAndMerge(notifyUser = false) {
+  try {
+    const res = await fetch(`${CLOUD_SYNC_BASE_URL}/json?poll=1&since=all`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) return;
+
+    const text = await res.text();
+    const lines = text.split('\n').filter((l) => l.trim().length > 0);
+
+    let changed = false;
+    for (const line of lines) {
+      try {
+        const envelope = JSON.parse(line);
+        if (envelope.event === 'message' && envelope.message) {
+          const payload = JSON.parse(envelope.message);
+          if (mergeIncomingCloudPayload(payload)) {
+            changed = true;
+          }
+        }
+      } catch (_) {
+        // Ignora righe non JSON
+      }
+    }
+
+    if (changed) {
+      saveItemsLocally(false);
+      saveConfig();
+      renderAll();
+      updateTelegramUIState();
+    }
+
+    setSyncStatusUI('connected');
+    if (notifyUser) {
+      showToast('Sincronizzazione PC ↔ Mobile completata!', 'success');
+    }
+  } catch (err) {
+    console.warn('Errore lettura stato Cloud:', err);
+  }
+}
+
+/**
+ * Apre il canale Server-Sent Events (SSE) per ricevere in < 0.5 secondi
+ * qualsiasi nuovo appuntamento o modifica effettuata da PC o da iPhone
+ */
+function connectCloudRealtimeStream() {
+  if (cloudEventSource) {
+    try {
+      cloudEventSource.close();
+    } catch (_) {}
+  }
+
+  try {
+    cloudEventSource = new EventSource(`${CLOUD_SYNC_BASE_URL}/sse`);
+
+    cloudEventSource.onopen = () => {
+      setSyncStatusUI('connected');
+    };
+
+    cloudEventSource.onmessage = (event) => {
+      try {
+        const envelope = JSON.parse(event.data);
+        if (envelope.event === 'message' && envelope.message) {
+          const payload = JSON.parse(envelope.message);
+          // Ignora i messaggi inviati da questa stessa scheda dispositivo
+          if (payload.senderId === DEVICE_SESSION_ID) return;
+
+          if (mergeIncomingCloudPayload(payload)) {
+            saveItemsLocally(true);
+            saveConfig();
+            renderAll();
+            updateTelegramUIState();
+            checkAndDispatchNotifications();
+          }
+        }
+      } catch (e) {
+        console.warn('Errore elaborazione evento Realtime:', e);
+      }
+    };
+
+    cloudEventSource.onerror = () => {
+      setSyncStatusUI('reconnecting');
+      setTimeout(() => {
+        if (!cloudEventSource || cloudEventSource.readyState === EventSource.CLOSED) {
+          connectCloudRealtimeStream();
+        }
+      }, 5000);
+    };
+  } catch (e) {
+    console.warn('SSE non disponibile:', e);
+  }
+}
+
+/**
+ * Unisce un pacchetto ricevuto dal Cloud con lo stato locale
+ */
+function mergeIncomingCloudPayload(payload) {
+  if (!payload || payload.type !== 'STUDIO_CARIFI_STATE') return false;
+  let hasChanges = false;
+
+  // 1. Se è stato inviato un comando di svuotamento totale più recente
+  if (payload.clearedAllAt) {
+    const clearTime = new Date(payload.clearedAllAt).getTime();
+    const beforeCount = items.length;
+    items = items.filter((item) => new Date(item.updatedAt || 0).getTime() > clearTime);
+    if (items.length !== beforeCount) hasChanges = true;
+  }
+
+  // 2. Unisci le cancellazioni (tombstones)
+  if (payload.deletedIds && typeof payload.deletedIds === 'object') {
+    for (const [delId, delTime] of Object.entries(payload.deletedIds)) {
+      if (!deletedIds[delId] || new Date(delTime) > new Date(deletedIds[delId])) {
+        deletedIds[delId] = delTime;
+        const prevLen = items.length;
+        items = items.filter((i) => i.id !== delId);
+        if (items.length !== prevLen) hasChanges = true;
+      }
+    }
+  }
+
+  // 3. Unisci gli appuntamenti e rateizzi
+  if (Array.isArray(payload.items)) {
+    for (const incoming of payload.items) {
+      if (!incoming || !incoming.id || String(incoming.id).startsWith('demo-')) continue;
+
+      // Se l'elemento è stato cancellato successivamente, ignoralo
+      if (deletedIds[incoming.id] && new Date(deletedIds[incoming.id]) >= new Date(incoming.updatedAt || 0)) {
+        continue;
+      }
+
+      const existingIdx = items.findIndex((i) => i.id === incoming.id);
+      if (existingIdx === -1) {
+        items.push(incoming);
+        hasChanges = true;
+      } else {
+        const localTime = new Date(items[existingIdx].updatedAt || 0).getTime();
+        const remoteTime = new Date(incoming.updatedAt || 0).getTime();
+        if (remoteTime > localTime) {
+          items[existingIdx] = incoming;
+          hasChanges = true;
+        }
+      }
+    }
+  }
+
+  // 4. Sincronizza anche i dati del Bot Telegram tra PC e iPhone
+  if (payload.telegram && payload.telegram.token) {
+    if (payload.telegram.token !== appConfig.telegramToken || payload.telegram.chatId !== appConfig.telegramChatId) {
+      appConfig.telegramToken = payload.telegram.token;
+      if (payload.telegram.chatId) appConfig.telegramChatId = payload.telegram.chatId;
+      if (payload.telegram.botUsername) appConfig.telegramBotUsername = payload.telegram.botUsername;
+      hasChanges = true;
+    }
+  }
+
+  return hasChanges;
+}
+
+/**
+ * Invia istantaneamente lo stato aggiornato al Cloud affinché compaia subito
+ * sull'altro dispositivo (PC Windows o iPhone)
+ */
+async function broadcastStateToCloud(extraFields = {}) {
+  const payload = {
+    type: 'STUDIO_CARIFI_STATE',
+    senderId: DEVICE_SESSION_ID,
+    sentAt: new Date().toISOString(),
+    items: items,
+    deletedIds: deletedIds,
+    telegram: {
+      token: appConfig.telegramToken || '',
+      chatId: appConfig.telegramChatId || '',
+      botUsername: appConfig.telegramBotUsername || ''
+    },
+    ...extraFields
+  };
+
+  try {
+    await fetch(CLOUD_SYNC_BASE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    });
+    setSyncStatusUI('connected');
+  } catch (err) {
+    console.warn('Errore invio aggiornamento Cloud:', err);
+  }
+}
+
+async function forceCloudSyncNow() {
+  await pullCloudHistoryAndMerge(true);
+  await broadcastStateToCloud();
+}
+
+// ============================================================================
+// COLLEGAMENTO AUTOMATICO BOT TELEGRAM (GENERA LINK + RILEVA CHAT ID DA SOLO)
+// ============================================================================
+function updateTelegramUIState() {
+  const pill = document.getElementById('telegramStatusPill');
+  const linkBox = document.getElementById('botDirectLinkBox');
+  const linkAnchor = document.getElementById('botDirectLinkAnchor');
+  const linkText = document.getElementById('botDirectLinkText');
+
+  if (appConfig.telegramBotUsername && linkBox && linkAnchor && linkText) {
+    linkBox.classList.remove('hidden');
+    linkAnchor.href = `https://t.me/${appConfig.telegramBotUsername}?start=studiocarifi`;
+    linkText.textContent = `Apri @${appConfig.telegramBotUsername} su Telegram`;
+  }
+
+  if (!pill) return;
+  if (appConfig.telegramToken && appConfig.telegramChatId) {
+    pill.textContent = appConfig.telegramBotUsername
+      ? `🟢 Attivo (@${appConfig.telegramBotUsername})`
+      : '🟢 Bot Telegram Collegato';
+    pill.className = 'px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300';
+  } else if (appConfig.telegramToken) {
+    pill.textContent = '🟡 Premi "Avvia" sul link del tuo Bot';
+    pill.className = 'px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300';
+  } else {
+    pill.textContent = 'In attesa di collegamento';
+    pill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700';
+  }
+}
+
+/**
+ * Verifica il Token incollato dall'utente, genera automaticamente il Link Diretto
+ * al suo Bot (https://t.me/NomeBot?start=studiocarifi) e resta in ascolto
+ * finché l'utente preme "Avvia" su Telegram per catturare in automatico il Chat ID!
+ */
+async function autoConnectTelegramBot() {
+  const tokenInput = document.getElementById('cfgTelegramToken');
+  const token = (tokenInput?.value || '').trim();
+  if (!token || !token.includes(':')) {
+    showToast('Incolla un Token valido ricevuto da @BotFather (es. 7123456:AAH...).', 'warning');
     return;
   }
 
   try {
-    supabaseClient = window.supabase.createClient(appConfig.supabaseUrl, appConfig.supabaseKey);
-
-    // Elimina eventuali vecchi record demo sul cloud se presenti
-    await supabaseClient.from('studio_carifi_memos').delete().like('id', 'demo-%');
-
-    // Scarica i dati iniziali dal Cloud
-    const { data, error } = await supabaseClient
-      .from('studio_carifi_memos')
-      .select('*');
-
-    if (error) throw error;
-
-    if (data && Array.isArray(data)) {
-      if (data.length > 0) {
-        items = data
-          .map((row) => row.payload)
-          .filter((item) => item && item.id && !String(item.id).startsWith('demo-'));
-        saveItemsLocally(false);
-        renderAll();
-      } else if (items.length > 0) {
-        await pushAllItemsToCloud();
-      }
+    const res = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+    const data = await res.json();
+    if (!data.ok || !data.result?.username) {
+      showToast('Token non riconosciuto da Telegram. Verifica di averlo copiato per intero.', 'error');
+      return;
     }
 
-    // Sottoscrizione Realtime per aggiornamenti istantanei tra iPhone e PC
-    if (realtimeChannel) {
-      supabaseClient.removeChannel(realtimeChannel);
-    }
+    const botUsername = data.result.username;
+    appConfig.telegramToken = token;
+    appConfig.telegramBotUsername = botUsername;
+    saveConfig();
+    updateTelegramUIState();
+    broadcastStateToCloud();
 
-    realtimeChannel = supabaseClient
-      .channel('studio-carifi-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'studio_carifi_memos' },
-        (payload) => {
-          handleCloudRealtimeEvent(payload);
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          if (statusBadge) statusBadge.textContent = 'Cloud Realtime Attivo (PC ↔ iOS)';
-          if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
-          if (modalBadge) {
-            modalBadge.textContent = 'Connesso in Tempo Reale';
-            modalBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
-          }
-        }
-      });
+    showToast(`Bot @${botUsername} verificato! Ora clicca sul pulsante azzurro per aprirlo su Telegram.`, 'success');
+
+    // Avvia il rilevamento automatico del Chat ID non appena l'utente clicca sul link e preme "Avvia"
+    startAutoDetectTelegramChatId(token, botUsername);
   } catch (err) {
-    console.warn('Connessione Cloud Supabase non riuscita, uso modalità locale:', err);
-    if (statusBadge) statusBadge.textContent = 'Errore Cloud (Locale attivo)';
-    if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-red-400';
+    showToast('Errore di rete durante la verifica del Token Telegram.', 'error');
   }
 }
 
-function handleCloudRealtimeEvent(payload) {
-  if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-    const incoming = payload.new?.payload;
-    if (!incoming || !incoming.id || String(incoming.id).startsWith('demo-')) return;
-    const idx = items.findIndex((i) => i.id === incoming.id);
-    if (idx >= 0) {
-      items[idx] = incoming;
-    } else {
-      items.push(incoming);
+function startAutoDetectTelegramChatId(token, botUsername) {
+  if (telegramPollTimer) clearInterval(telegramPollTimer);
+
+  let attempts = 0;
+  const checkUpdates = async () => {
+    attempts++;
+    if (attempts > 60) {
+      clearInterval(telegramPollTimer);
+      return;
     }
-    saveItemsLocally(false);
-    renderAll();
-  } else if (payload.eventType === 'DELETE') {
-    const deletedId = payload.old?.id;
-    if (!deletedId) return;
-    items = items.filter((i) => i.id !== deletedId);
-    saveItemsLocally(false);
-    renderAll();
-  }
-}
 
-async function upsertItemToCloud(item) {
-  if (!supabaseClient) return;
-  try {
-    await supabaseClient.from('studio_carifi_memos').upsert({
-      id: item.id,
-      payload: item,
-      updated_at: new Date().toISOString()
-    });
-  } catch (e) {
-    console.warn('Errore salvataggio cloud:', e);
-  }
-}
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?limit=10`);
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.result) && data.result.length > 0) {
+        // Prende l'ultimo messaggio inviato al bot
+        const latestUpdate = data.result[data.result.length - 1];
+        const chat =
+          latestUpdate.message?.chat ||
+          latestUpdate.my_chat_member?.chat ||
+          latestUpdate.channel_post?.chat;
 
-async function deleteItemFromCloud(itemId) {
-  if (!supabaseClient) return;
-  try {
-    await supabaseClient.from('studio_carifi_memos').delete().eq('id', itemId);
-  } catch (e) {
-    console.warn('Errore eliminazione cloud:', e);
-  }
-}
+        if (chat && chat.id) {
+          clearInterval(telegramPollTimer);
+          const detectedId = String(chat.id);
+          appConfig.telegramChatId = detectedId;
+          const chatInput = document.getElementById('cfgTelegramChatId');
+          if (chatInput) chatInput.value = detectedId;
 
-async function pushAllItemsToCloud() {
-  if (!supabaseClient || items.length === 0) return;
-  try {
-    const rows = items.map((item) => ({
-      id: item.id,
-      payload: item,
-      updated_at: new Date().toISOString()
-    }));
-    await supabaseClient.from('studio_carifi_memos').upsert(rows);
-  } catch (e) {
-    console.warn('Errore push iniziale cloud:', e);
-  }
+          saveConfig();
+          updateTelegramUIState();
+          broadcastStateToCloud();
+
+          const hint = document.getElementById('botDetectionHint');
+          if (hint) {
+            hint.textContent = `✅ Collegato automaticamente a ${chat.first_name || chat.title || 'Telegram'} (ID: ${detectedId})!`;
+          }
+
+          await sendTelegramMessage(
+            `🏛 *STUDIO CARIFI COMMERCIALISTA*\n` +
+            `✅ *Collegamento Automatico Completato!*\n\n` +
+            `Da questo momento riceverai qui in tempo reale tutte le notifiche di appuntamenti e rateizzi impostati su PC e iPhone.`
+          );
+
+          showToast('Bot Telegram collegato automaticamente con successo!', 'success');
+        }
+      }
+    } catch (_) {}
+  };
+
+  checkUpdates();
+  telegramPollTimer = setInterval(checkUpdates, 2500);
 }
 
 // ============================================================================
@@ -317,7 +558,6 @@ function checkAndDispatchNotifications() {
   for (const item of items) {
     if (item.completed) continue;
 
-    // Controlla se è in posticipo (Snooze)
     if (item.snoozedUntil && new Date(item.snoozedUntil).getTime() > nowMs) {
       continue;
     }
@@ -325,13 +565,13 @@ function checkAndDispatchNotifications() {
     const dueMs = new Date(item.dueDate).getTime();
     const notifyStartMs = new Date(item.notifyStartAt).getTime();
 
-    // 1. Controllo Preavvisi Preparatori (7 giorni prima, 3 giorni prima, mattina stessa)
     if (!item.preAlertsFired) item.preAlertsFired = {};
 
     if (item.preAlerts?.d7 && !item.preAlertsFired.d7) {
       const d7Ms = dueMs - 7 * 24 * 60 * 60 * 1000;
       if (nowMs >= d7Ms && nowMs < dueMs) {
         item.preAlertsFired.d7 = true;
+        item.updatedAt = now.toISOString();
         stateChanged = true;
         dispatchMultiChannelAlert(item, 'Preavviso 7 giorni prima');
       }
@@ -341,6 +581,7 @@ function checkAndDispatchNotifications() {
       const d3Ms = dueMs - 3 * 24 * 60 * 60 * 1000;
       if (nowMs >= d3Ms && nowMs < dueMs) {
         item.preAlertsFired.d3 = true;
+        item.updatedAt = now.toISOString();
         stateChanged = true;
         dispatchMultiChannelAlert(item, 'Preavviso 3 giorni prima');
       }
@@ -351,12 +592,12 @@ function checkAndDispatchNotifications() {
       dueDayMorning.setHours(9, 0, 0, 0);
       if (nowMs >= dueDayMorning.getTime() && nowMs <= dueMs) {
         item.preAlertsFired.morning = true;
+        item.updatedAt = now.toISOString();
         stateChanged = true;
         dispatchMultiChannelAlert(item, 'Promemoria Mattutino del giorno di scadenza');
       }
     }
 
-    // 2. Controllo Finestra di Notifica Principale e Ripetizione in base all'Intensità
     if (nowMs >= notifyStartMs && !item.acknowledged) {
       activeAlarms.push(item);
 
@@ -366,12 +607,14 @@ function checkAndDispatchNotifications() {
       if (item.intensity === 'low') {
         if (!item.lastNotifiedAt) {
           item.lastNotifiedAt = now.toISOString();
+          item.updatedAt = now.toISOString();
           stateChanged = true;
           dispatchMultiChannelAlert(item, 'Promemoria Scadenza');
         }
       } else {
         if (!lastMs || (nowMs - lastMs) >= repeatIntervalMs) {
           item.lastNotifiedAt = now.toISOString();
+          item.updatedAt = now.toISOString();
           stateChanged = true;
           const label = item.intensity === 'high' ? '🚨 ALLARME INSISTENTE STUDIO' : '🔔 Sollecito Periodico';
           dispatchMultiChannelAlert(item, label);
@@ -514,7 +757,7 @@ function acknowledgeItem(id) {
   item.acknowledged = true;
   item.updatedAt = new Date().toISOString();
   saveItemsLocally();
-  upsertItemToCloud(item);
+  broadcastStateToCloud();
   renderAll();
   checkAndDispatchNotifications();
   showToast(`Allarme silenziato: "${item.client}" preso in carico.`, 'success');
@@ -527,11 +770,11 @@ function acknowledgeAllActiveAlarms() {
     if (!item.completed && !item.acknowledged && new Date(item.notifyStartAt).getTime() <= nowMs) {
       item.acknowledged = true;
       item.updatedAt = new Date().toISOString();
-      upsertItemToCloud(item);
       count++;
     }
   });
   saveItemsLocally();
+  broadcastStateToCloud();
   renderAll();
   checkAndDispatchNotifications();
   showToast(`${count} avvisi confermati e presi in carico.`, 'success');
@@ -544,10 +787,10 @@ function snoozeAllActiveAlarms(minutes = 15) {
     if (!item.completed && !item.acknowledged && new Date(item.notifyStartAt).getTime() <= nowMs) {
       item.snoozedUntil = until;
       item.updatedAt = new Date().toISOString();
-      upsertItemToCloud(item);
     }
   });
   saveItemsLocally();
+  broadcastStateToCloud();
   renderAll();
   checkAndDispatchNotifications();
   showToast(`Allarmi posticipati di ${minutes} minuti.`, 'warning');
@@ -562,7 +805,7 @@ function toggleCompleteItem(id) {
   }
   item.updatedAt = new Date().toISOString();
   saveItemsLocally();
-  upsertItemToCloud(item);
+  broadcastStateToCloud();
   renderAll();
   checkAndDispatchNotifications();
   showToast(
@@ -577,12 +820,13 @@ function deleteItem(id) {
   const item = items.find((i) => i.id === id);
   if (!item) return;
   if (!confirm(`Eliminare definitivamente "${item.title}" del cliente ${item.client}?`)) return;
+  deletedIds[id] = new Date().toISOString();
   items = items.filter((i) => i.id !== id);
   saveItemsLocally();
-  deleteItemFromCloud(id);
+  broadcastStateToCloud();
   renderAll();
   checkAndDispatchNotifications();
-  showToast('Promemoria eliminato.', 'info');
+  showToast('Promemoria eliminato su PC e Mobile.', 'info');
 }
 
 function duplicateNextInstallment(id) {
@@ -614,7 +858,7 @@ function duplicateNextInstallment(id) {
 
   items.push(newItem);
   saveItemsLocally();
-  upsertItemToCloud(newItem);
+  broadcastStateToCloud();
   renderAll();
   showToast(`Creata rata successiva per ${newItem.client} (${formatDateTimeIT(newItem.dueDate)})`, 'success');
 }
@@ -1073,11 +1317,11 @@ function saveItemForm(e) {
   }
 
   saveItemsLocally();
-  upsertItemToCloud(itemData);
+  broadcastStateToCloud();
   closeItemModal();
   renderAll();
   checkAndDispatchNotifications();
-  showToast(`Salvato: ${client} — ${title}`, 'success');
+  showToast(`Salvato e sincronizzato: ${client} — ${title}`, 'success');
 }
 
 // ============================================================================
@@ -1143,24 +1387,23 @@ function generateInstallmentPlan(e) {
     };
 
     items.push(newItem);
-    upsertItemToCloud(newItem);
   }
 
   saveItemsLocally();
+  broadcastStateToCloud();
   closeInstallmentPlanModal();
   renderAll();
   checkAndDispatchNotifications();
-  showToast(`Generato piano completo di ${count} rate per ${client}!`, 'success');
+  showToast(`Generato e sincronizzato piano di ${count} rate per ${client}!`, 'success');
 }
 
 // ============================================================================
-// MODALE IMPOSTAZIONI CLOUD (SUPABASE REALTIME) & BOT TELEGRAM
+// MODALE IMPOSTAZIONI TELEGRAM & SYNC
 // ============================================================================
 function openSettingsModal() {
-  document.getElementById('cfgSupabaseUrl').value = appConfig.supabaseUrl || '';
-  document.getElementById('cfgSupabaseKey').value = appConfig.supabaseKey || '';
   document.getElementById('cfgTelegramToken').value = appConfig.telegramToken || '';
   document.getElementById('cfgTelegramChatId').value = appConfig.telegramChatId || '';
+  updateTelegramUIState();
 
   const modal = document.getElementById('settingsModal');
   modal.classList.remove('hidden');
@@ -1168,40 +1411,19 @@ function openSettingsModal() {
 }
 
 function closeSettingsModal() {
+  if (telegramPollTimer) clearInterval(telegramPollTimer);
   const modal = document.getElementById('settingsModal');
   modal.classList.add('hidden');
   modal.classList.remove('flex');
-}
-
-async function syncLocalToCloud() {
-  appConfig.supabaseUrl = document.getElementById('cfgSupabaseUrl').value.trim();
-  appConfig.supabaseKey = document.getElementById('cfgSupabaseKey').value.trim();
-  saveConfig();
-  await initSupabaseRealtime();
-  await pushAllItemsToCloud();
-  showToast('Configurazione Cloud salvata e sincronizzata!', 'success');
-}
-
-function copySupabaseSql() {
-  const sql = `CREATE TABLE IF NOT EXISTS public.studio_carifi_memos (
-  id TEXT PRIMARY KEY,
-  payload JSONB NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-ALTER TABLE public.studio_carifi_memos ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Accesso Completo Studio Carifi" ON public.studio_carifi_memos FOR ALL USING (true) WITH CHECK (true);
-ALTER PUBLICATION supabase_realtime ADD TABLE public.studio_carifi_memos;`;
-
-  navigator.clipboard.writeText(sql).then(() => {
-    showToast('Script SQL copiato negli appunti! Incollalo nel SQL Editor di Supabase.', 'success');
-  });
 }
 
 function saveTelegramConfig() {
   appConfig.telegramToken = document.getElementById('cfgTelegramToken').value.trim();
   appConfig.telegramChatId = document.getElementById('cfgTelegramChatId').value.trim();
   saveConfig();
-  showToast('Configurazione Bot Telegram dello Studio salvata!', 'success');
+  updateTelegramUIState();
+  broadcastStateToCloud();
+  showToast('Configurazione Bot Telegram salvata e sincronizzata su tutti i dispositivi!', 'success');
 }
 
 async function sendTelegramMessage(text) {
@@ -1226,16 +1448,16 @@ async function sendTelegramMessage(text) {
 async function testTelegramNotification() {
   saveTelegramConfig();
   if (!appConfig.telegramToken || !appConfig.telegramChatId) {
-    showToast('Inserisci prima Bot Token e Chat ID di Telegram.', 'warning');
+    showToast('Incolla prima il Token e premi "Genera Link & Collega Bot".', 'warning');
     return;
   }
   const ok = await sendTelegramMessage(
-    `🏛 *STUDIO CARIFI COMMERCIALISTA*\n✅ Collegamento notifiche istantanee su iPhone / PC attivo!`
+    `🏛 *STUDIO CARIFI COMMERCIALISTA*\n✅ Notifica di prova inviata con successo su iPhone e PC!`
   );
   if (ok) {
     showToast('Notifica Telegram inviata! Controlla il tuo iPhone/PC.', 'success');
   } else {
-    showToast('Errore nell\'invio a Telegram. Verifica Token e Chat ID.', 'error');
+    showToast('Errore nell\'invio a Telegram. Premi "Avvia" sul tuo Bot.', 'error');
   }
 }
 
@@ -1262,9 +1484,9 @@ function importDataJson(event) {
       if (Array.isArray(imported)) {
         items = imported;
         saveItemsLocally();
-        pushAllItemsToCloud();
+        broadcastStateToCloud();
         renderAll();
-        showToast(`Importati ${imported.length} promemoria con successo!`, 'success');
+        showToast(`Importati e sincronizzati ${imported.length} promemoria!`, 'success');
       }
     } catch (err) {
       showToast('File JSON non valido.', 'error');
@@ -1274,20 +1496,18 @@ function importDataJson(event) {
 }
 
 async function clearAllItems() {
-  if (!confirm('Vuoi cancellare tutti gli appuntamenti e rateizzi presenti in agenda?')) return;
+  if (!confirm('Vuoi cancellare tutti gli appuntamenti e rateizzi presenti in agenda su tutti i dispositivi?')) return;
+  const nowIso = new Date().toISOString();
+  items.forEach((i) => {
+    deletedIds[i.id] = nowIso;
+  });
   items = [];
   saveItemsLocally();
-  if (supabaseClient) {
-    try {
-      await supabaseClient.from('studio_carifi_memos').delete().neq('id', '');
-    } catch (e) {
-      console.warn('Errore pulizia cloud:', e);
-    }
-  }
+  await broadcastStateToCloud({ clearedAllAt: nowIso });
   renderAll();
   checkAndDispatchNotifications();
   closeSettingsModal();
-  showToast('Agenda svuotata completamente.', 'info');
+  showToast('Agenda svuotata su tutti i dispositivi.', 'info');
 }
 
 // ============================================================================
