@@ -1,11 +1,12 @@
 {
-  "name": "Studio Carifi Commercialista — Agenda & Scadenzario",
-  "short_name": "Studio Carifi",
-  "description": "Sistema gestionale di promemoria, appuntamenti e scadenzario rateizzi fiscali in tempo reale per lo Studio Carifi Commercialista - Ordine dei Dottori Commercialisti di Nola.",
+  "id": "./index.html",
+  "name": "Memo Studio Carifi",
+  "short_name": "Memo Studio Carifi",
+  "description": "Gestionale istituzionale di appuntamenti, scadenze e rateizzi fiscali con notifiche istantanee su iOS e PC per lo Studio Carifi Commercialista - Ordine dei Dottori Commercialisti di Nola.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "background_color": "#122b49",
   "theme_color": "#122b49",
   "lang": "it-IT",
@@ -22,6 +23,20 @@
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nuovo Appuntamento",
+      "short_name": "Nuovo",
+      "url": "./index.html#new-item",
+      "icons": [{ "src": "./icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Importa da Excel",
+      "short_name": "Excel",
+      "url": "./index.html#import-excel",
+      "icons": [{ "src": "./icon.svg", "sizes": "192x192" }]
     }
   ]
 }

@@ -18,13 +18,19 @@
 body {
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--carifi-surface);
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(18, 43, 73, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(184, 20, 20, 0.03) 0px, transparent 50%);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(18, 43, 73, 0.045) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(184, 20, 20, 0.035) 0px, transparent 50%);
   padding-top: var(--safe-top);
-  padding-bottom: calc(var(--safe-bottom) + 4.5rem);
+  padding-bottom: calc(var(--safe-bottom) + 4.75rem);
   -webkit-tap-highlight-color: transparent;
   color: #0f233c;
+}
+
+@media (min-width: 768px) {
+  body {
+    padding-bottom: 2.5rem;
+  }
 }
 
 /* Tipografia Istituzionale come da Logo Ufficiale */
@@ -38,27 +44,31 @@ body {
 
 /* Sfondo Header Istituzionale Blu Navy Studio Carifi */
 .carifi-header-gradient {
-  background: linear-gradient(135deg, #0d213a 0%, #122b49 55%, #163356 100%);
+  background: linear-gradient(135deg, #0b1c31 0%, #122b49 55%, #163356 100%);
 }
 
 /* Linea di accento Rosso Cremisi sotto l'header */
 .carifi-crimson-divider {
   height: 3px;
-  background: linear-gradient(90deg, rgba(184,20,20,0.2) 0%, #b81414 25%, #dc2626 50%, #b81414 75%, rgba(184,20,20,0.2) 100%);
+  background: linear-gradient(90deg, rgba(184, 20, 20, 0.2) 0%, #b81414 25%, #dc2626 50%, #b81414 75%, rgba(184, 20, 20, 0.2) 100%);
 }
 
 /* Pulsante Primario Rosso Cremisi Studio Carifi */
 .btn-carifi-crimson {
   background: linear-gradient(135deg, #c81616 0%, #9e0f0f 100%);
   color: #ffffff;
-  box-shadow: 0 4px 14px -2px rgba(184, 20, 20, 0.45);
+  box-shadow: 0 4px 14px -2px rgba(184, 20, 20, 0.42);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-carifi-crimson:hover {
   background: linear-gradient(135deg, #dc1c1c 0%, #b31212 100%);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px -2px rgba(184, 20, 20, 0.55);
+  box-shadow: 0 6px 20px -2px rgba(184, 20, 20, 0.52);
+}
+
+.btn-carifi-crimson:active {
+  transform: translateY(0);
 }
 
 /* Pulsante Secondario Blu Navy Studio Carifi */
@@ -83,9 +93,18 @@ body {
 }
 
 .carifi-card:hover {
-  border-color: rgba(18, 43, 73, 0.24);
+  border-color: rgba(18, 43, 73, 0.22);
   box-shadow: 0 10px 28px -6px rgba(18, 43, 73, 0.12);
-  transform: translateY(-1px);
+}
+
+/* Evidenziazione elemento selezionato da notifica */
+@keyframes highlight-flash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184, 20, 20, 0); }
+  25%, 75% { box-shadow: 0 0 0 6px rgba(184, 20, 20, 0.45); }
+}
+
+.highlight-item-flash {
+  animation: highlight-flash 1.4s ease-in-out 2;
 }
 
 /* Animazione per avvisi ad Alta Intensità / Insistenti */
@@ -114,7 +133,55 @@ body {
 }
 
 .animate-bell {
-  animation: bell-ring 1.2s ease-in-out infinite;
+  animation: bell-ring 1.15s ease-in-out infinite;
+}
+
+/* Calendario Mensile */
+.cal-day-cell {
+  min-height: 4.25rem;
+  transition: all 0.15s ease;
+}
+
+@media (max-width: 640px) {
+  .cal-day-cell {
+    min-height: 3.4rem;
+  }
+}
+
+.cal-day-cell:hover {
+  background-color: #f1f5f9;
+}
+
+.cal-day-selected {
+  background-color: rgba(18, 43, 73, 0.08) !important;
+  border-color: #122b49 !important;
+  box-shadow: inset 0 0 0 1px #122b49;
+}
+
+.cal-day-today {
+  border-color: rgba(184, 20, 20, 0.55);
+  background-color: rgba(184, 20, 20, 0.03);
+}
+
+/* Dropzone Import Excel */
+.excel-dropzone {
+  border: 2px dashed rgba(18, 43, 73, 0.28);
+  transition: all 0.2s ease;
+}
+
+.excel-dropzone.drag-over {
+  border-color: #b81414;
+  background-color: rgba(184, 20, 20, 0.05);
+  transform: scale(1.01);
+}
+
+/* Nascondi scrollbar orizzontale sui tab su mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Scrollbar elegante su PC Windows */
@@ -145,4 +212,114 @@ body {
     background: #ffffff !important;
     padding: 0 !important;
   }
+  .carifi-card {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
 }
+
+/* ============================================================================
+   SCHERMATA DI BLOCCO SICUREZZA STUDIO CARIFI (PIN 6 CIFRE + AES-256-GCM)
+   ============================================================================ */
+.lock-screen-bg {
+  background:
+    radial-gradient(circle at 18% 15%, rgba(184, 20, 20, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 82% 85%, rgba(37, 77, 125, 0.35) 0%, transparent 50%),
+    linear-gradient(145deg, #071324 0%, #0d213a 55%, #122b49 100%);
+}
+
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.38);
+  background: transparent;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pin-dot.filled {
+  background: #ffffff;
+  border-color: #ffffff;
+  transform: scale(1.18);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.55);
+}
+
+.pin-dot.error {
+  background: #dc2626;
+  border-color: #ef4444;
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.75);
+}
+
+.pin-dot.success {
+  background: #10b981;
+  border-color: #34d399;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.75);
+}
+
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.animate-pin-shake {
+  animation: pin-shake 0.38s ease-in-out;
+}
+
+.pin-key {
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.11);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  transition: all 0.12s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.pin-key-sub {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.58);
+  font-weight: 700;
+  margin-top: 1px;
+  line-height: 1;
+}
+
+.pin-key-action {
+  background: transparent;
+  border-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.pin-key:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.pin-key-action:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: transparent;
+}
+
+.pin-key:active {
+  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.34);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.privacy-blur-active #appShell {
+  filter: blur(18px);
+  pointer-events: none;
+  user-select: none;
+}
+
