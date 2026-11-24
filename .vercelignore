@@ -1,0 +1,7 @@
+*.xlsx
+*.xls
+~$*
+*.bat
+server.ps1
+.git
+.gitignore
