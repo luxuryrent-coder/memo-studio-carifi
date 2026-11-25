@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Memo Studio Carifi</title>
   <meta name="description" content="Memo Studio Carifi — Agenda e Scadenzario Protetto" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
@@ -60,7 +60,7 @@
   <div id="securityLockOverlay" class="fixed inset-0 z-[100] lock-screen-bg flex items-center justify-center p-4 overflow-y-auto">
     <div class="w-full max-w-xs sm:max-w-sm py-4 px-4 text-white text-center space-y-5">
       <div class="flex flex-col items-center">
-        <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-carifi-crimson shadow-xl bg-carifi-navy mb-3">
+        <div class="carifi-logo-lock w-16 h-16 rounded-2xl overflow-hidden border-2 border-carifi-crimson shadow-xl bg-carifi-navy mb-3">
           <img src="./logo.jpg" alt="Memo Studio Carifi" class="w-full h-full object-cover scale-110" />
         </div>
         <h1 class="font-carifi-serif text-xl font-bold tracking-wider text-white">MEMO STUDIO CARIFI</h1>
@@ -138,44 +138,44 @@
   </div>
 
   <!-- APP SHELL (Nascosta finche' il Vault AES-256 non viene decifrato) -->
-  <div id="appShell" class="hidden min-h-screen flex flex-col">
+  <div id="appShell" class="hidden min-h-screen flex flex-col overflow-x-hidden w-full">
 
   <!-- HEADER ISTITUZIONALE STUDIO CARIFI COMMERCIALISTA -->
-  <header class="carifi-header-gradient text-white shadow-xl sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5">
+  <header class="carifi-header-gradient text-white shadow-xl relative md:sticky md:top-0 z-30">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5 sm:gap-3.5">
 
         <!-- Stemma Ufficiale e Intestazione Ordine di Nola -->
-        <div class="flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3.5 sm:gap-4">
-            <div class="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-carifi-crimson/70 shadow-lg bg-carifi-navy shrink-0 flex items-center justify-center">
+        <div class="flex items-center justify-between gap-2 min-w-0">
+          <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
+            <div class="carifi-logo-box w-11 h-11 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-carifi-crimson/70 shadow-lg bg-carifi-navy shrink-0 flex items-center justify-center">
               <img src="./logo.jpg" alt="Logo Studio Carifi Commercialista" class="w-full h-full object-cover scale-110" />
             </div>
 
-            <div>
-              <div class="flex flex-wrap items-center gap-2">
-                <h1 class="font-carifi-serif text-lg sm:text-2xl font-bold tracking-wider text-white leading-none">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h1 class="font-carifi-serif text-base sm:text-2xl font-bold tracking-wider text-white leading-none truncate">
                   STUDIO CARIFI
                 </h1>
-                <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 cursor-pointer hover:bg-emerald-500/30 transition" onclick="openSettingsModal()" title="Sincronizzazione automatica PC e iOS attiva">
-                  <span id="syncDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span id="syncStatusText">Cloud Istantaneo (PC ↔ iOS)</span>
+                <span id="syncStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 cursor-pointer hover:bg-emerald-500/30 transition shrink-0" onclick="openSettingsModal()" title="Sincronizzazione automatica PC e iOS attiva">
+                  <span id="syncDot" class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                  <span id="syncStatusText" class="truncate max-w-[95px] sm:max-w-none">Cloud E2EE</span>
                 </span>
               </div>
 
-              <p class="font-carifi-Geometric text-[10px] sm:text-xs font-bold tracking-[0.26em] text-slate-100 uppercase mt-1">
+              <p class="font-carifi-Geometric text-[9px] sm:text-xs font-bold tracking-[0.22em] sm:tracking-[0.26em] text-slate-100 uppercase mt-0.5 sm:mt-1">
                 COMMERCIALISTA
               </p>
-              <p class="font-carifi-Geometric text-[9px] sm:text-[10px] font-medium tracking-[0.14em] text-slate-300/90 uppercase mt-0.5">
+              <p class="hidden sm:block font-carifi-Geometric text-[10px] font-medium tracking-[0.14em] text-slate-300/90 uppercase mt-0.5">
                 ORDINE DEI DOTTORI COMMERCIALISTI DI NOLA
               </p>
 
-              <div class="flex flex-wrap items-center gap-3 mt-1 text-[11px] text-slate-300">
+              <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-[10px] sm:text-[11px] text-slate-300">
                 <span class="inline-flex items-center gap-1 text-red-300 font-semibold">
-                  <i data-lucide="clock" class="w-3 h-3"></i>
+                  <i data-lucide="clock" class="w-3 h-3 shrink-0"></i>
                   <span id="liveClock" class="font-mono"></span>
                 </span>
-                <span id="headerNotifStatus" onclick="openSettingsModal()" class="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-300 hover:text-white cursor-pointer">
+                <span id="headerNotifStatus" onclick="openSettingsModal()" class="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold text-slate-300 hover:text-white cursor-pointer">
                   <i data-lucide="bell" class="w-3 h-3"></i>
                   <span id="headerNotifStatusText">Verifica notifiche...</span>
                 </span>
@@ -185,53 +185,53 @@
 
           <!-- Pulsanti Mobile: Blocca + Notifiche -->
           <div class="lg:hidden flex items-center gap-1.5 shrink-0">
-            <button onclick="lockAppNow()" class="p-2.5 rounded-xl bg-carifi-crimson/80 text-white hover:bg-carifi-crimson border border-red-400/40 transition" title="Blocca subito l'agenda">
+            <button onclick="lockAppNow()" class="p-2 rounded-xl bg-carifi-crimson/80 text-white hover:bg-carifi-crimson border border-red-400/40 transition" title="Blocca subito l'agenda">
               <i data-lucide="lock" class="w-4 h-4"></i>
             </button>
-            <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/15 transition" title="Centro Sicurezza, Notifiche iOS & PC e Sincronizzazione">
+            <button onclick="openSettingsModal()" class="p-2 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/15 transition" title="Centro Sicurezza, Notifiche iOS & PC e Sincronizzazione">
               <i data-lucide="bell-ring" class="w-4 h-4 text-red-300"></i>
             </button>
           </div>
         </div>
 
         <!-- Azioni Rapide Header -->
-        <div class="flex flex-wrap items-center gap-2 no-print">
-          <button id="btnPermissionNotice" onclick="requestDeviceNotifications()" class="hidden items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white text-carifi-navy hover:bg-slate-100 transition shadow-md">
-            <i data-lucide="bell-ring" class="w-4 h-4 text-carifi-crimson"></i>
+        <div class="flex flex-nowrap lg:flex-wrap items-center gap-2 overflow-x-auto no-scrollbar pb-0.5 no-print">
+          <button id="btnPermissionNotice" onclick="requestDeviceNotifications()" class="hidden items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-white text-carifi-navy hover:bg-slate-100 transition shadow-md shrink-0 whitespace-nowrap">
+            <i data-lucide="bell-ring" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-carifi-crimson"></i>
             <span>Attiva Notifiche</span>
           </button>
 
-          <button onclick="triggerTestNotification()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition" title="Prova subito suono, notifica nativa PC/iOS e Push istantaneo">
-            <i data-lucide="volume-2" class="w-4 h-4 text-red-400"></i>
+          <button onclick="triggerTestNotification()" class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition shrink-0 whitespace-nowrap" title="Prova subito suono, notifica nativa PC/iOS e Push istantaneo">
+            <i data-lucide="volume-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400"></i>
             <span>Test Avviso</span>
           </button>
 
-          <button onclick="openExcelImportModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-100 border border-emerald-400/30 transition" title="Importa appuntamenti e scadenze da file Excel (.xlsx, .xls, .csv)">
+          <button onclick="openExcelImportModal()" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-100 border border-emerald-400/30 transition shrink-0 whitespace-nowrap" title="Importa appuntamenti e scadenze da file Excel (.xlsx, .xls, .csv)">
             <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-300"></i>
             <span>Importa Excel</span>
           </button>
 
-          <button onclick="openRoutineManagerModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition" title="Gestisci e crea Routine di Notifiche personalizzate">
-            <i data-lucide="calendar-clock" class="w-4 h-4 text-amber-300"></i>
+          <button onclick="openRoutineManagerModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition shrink-0 whitespace-nowrap" title="Gestisci e crea Routine di Notifiche personalizzate">
+            <i data-lucide="calendar-clock" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300"></i>
             <span>Routine Avvisi</span>
           </button>
 
-          <button onclick="openInstallmentPlanModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition">
-            <i data-lucide="layers" class="w-4 h-4 text-red-300"></i>
+          <button onclick="openInstallmentPlanModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition shrink-0 whitespace-nowrap">
+            <i data-lucide="layers" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-300"></i>
             <span>Piano Rate</span>
           </button>
 
-          <button onclick="openItemModal()" class="btn-carifi-crimson inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide">
+          <button onclick="openItemModal()" class="btn-carifi-crimson hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide shrink-0 whitespace-nowrap">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>Nuovo Impegno</span>
           </button>
 
-          <button onclick="openSettingsModal()" class="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition" title="Configura Sicurezza, Notifiche Istantanee iOS & PC e Sincronizzazione">
+          <button onclick="openSettingsModal()" class="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition shrink-0 whitespace-nowrap" title="Configura Sicurezza, Notifiche Istantanee iOS & PC e Sincronizzazione">
             <i data-lucide="sliders-horizontal" class="w-4 h-4 text-red-300"></i>
             <span>Sicurezza & Notifiche</span>
           </button>
 
-          <button onclick="lockAppNow()" class="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-black/25 hover:bg-carifi-crimson text-white border border-white/15 transition" title="Blocca immediatamente il gestionale (azzera chiave AES in RAM)">
+          <button onclick="lockAppNow()" class="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-black/25 hover:bg-carifi-crimson text-white border border-white/15 transition shrink-0 whitespace-nowrap" title="Blocca immediatamente il gestionale (azzera chiave AES in RAM)">
             <i data-lucide="lock" class="w-4 h-4 text-emerald-300"></i>
             <span>Blocca</span>
           </button>
@@ -295,73 +295,73 @@
   </div>
 
   <!-- CONTENUTO PRINCIPALE -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5 space-y-4 sm:space-y-5">
 
     <!-- RIEPILOGO KPI STUDIO CARIFI -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <div onclick="setQuickFilter('urgent')" class="carifi-card rounded-2xl p-4 sm:p-5 cursor-pointer relative overflow-hidden group">
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      <div onclick="setQuickFilter('urgent')" class="carifi-card rounded-2xl p-3 sm:p-5 cursor-pointer relative overflow-hidden group min-w-0">
         <div class="absolute top-0 left-0 w-1.5 h-full bg-carifi-crimson"></div>
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Oggi / Scaduti</span>
-          <span class="p-2 rounded-xl bg-red-50 text-carifi-crimson group-hover:bg-carifi-crimson group-hover:text-white transition">
+        <div class="flex items-center justify-between gap-1.5 pl-1">
+          <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 leading-tight">Oggi / Scaduti</span>
+          <span class="p-1.5 sm:p-2 rounded-xl bg-red-50 text-carifi-crimson group-hover:bg-carifi-crimson group-hover:text-white transition shrink-0">
             <i data-lucide="alert-circle" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </span>
         </div>
-        <div class="mt-2.5 flex items-baseline gap-2">
-          <span id="kpiDueToday" class="text-2xl sm:text-3xl font-extrabold text-carifi-navy">0</span>
-          <span class="text-xs text-carifi-crimson font-semibold">priorità immediata</span>
+        <div class="mt-2 sm:mt-2.5 pl-1 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-2 min-w-0">
+          <span id="kpiDueToday" class="text-xl sm:text-3xl font-extrabold text-carifi-navy leading-none">0</span>
+          <span class="text-[11px] sm:text-xs text-carifi-crimson font-semibold truncate">priorità immediata</span>
         </div>
       </div>
 
-      <div onclick="setQuickFilter('high_intensity')" class="carifi-card rounded-2xl p-4 sm:p-5 cursor-pointer relative overflow-hidden group">
+      <div onclick="setQuickFilter('high_intensity')" class="carifi-card rounded-2xl p-3 sm:p-5 cursor-pointer relative overflow-hidden group min-w-0">
         <div class="absolute top-0 left-0 w-1.5 h-full bg-carifi-navy"></div>
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Allarmi Insistenti</span>
-          <span class="p-2 rounded-xl bg-slate-100 text-carifi-navy group-hover:bg-carifi-navy group-hover:text-white transition">
+        <div class="flex items-center justify-between gap-1.5 pl-1">
+          <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 leading-tight">Allarmi Insistenti</span>
+          <span class="p-1.5 sm:p-2 rounded-xl bg-slate-100 text-carifi-navy group-hover:bg-carifi-navy group-hover:text-white transition shrink-0">
             <i data-lucide="bell-ring" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </span>
         </div>
-        <div class="mt-2.5 flex items-baseline gap-2">
-          <span id="kpiHighIntensity" class="text-2xl sm:text-3xl font-extrabold text-carifi-navy">0</span>
-          <span class="text-xs text-slate-600 font-semibold">notifica continua</span>
+        <div class="mt-2 sm:mt-2.5 pl-1 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-2 min-w-0">
+          <span id="kpiHighIntensity" class="text-xl sm:text-3xl font-extrabold text-carifi-navy leading-none">0</span>
+          <span class="text-[11px] sm:text-xs text-slate-600 font-semibold truncate">notifica continua</span>
         </div>
       </div>
 
-      <div onclick="setQuickFilter('rateizzo')" class="carifi-card rounded-2xl p-4 sm:p-5 cursor-pointer relative overflow-hidden group">
+      <div onclick="setQuickFilter('rateizzo')" class="carifi-card rounded-2xl p-3 sm:p-5 cursor-pointer relative overflow-hidden group min-w-0">
         <div class="absolute top-0 left-0 w-1.5 h-full bg-carifi-navyLight"></div>
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Rateizzi & Tributi</span>
-          <span class="p-2 rounded-xl bg-slate-100 text-carifi-navyMid group-hover:bg-carifi-navyMid group-hover:text-white transition">
+        <div class="flex items-center justify-between gap-1.5 pl-1">
+          <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 leading-tight">Rateizzi & Tributi</span>
+          <span class="p-1.5 sm:p-2 rounded-xl bg-slate-100 text-carifi-navyMid group-hover:bg-carifi-navyMid group-hover:text-white transition shrink-0">
             <i data-lucide="landmark" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </span>
         </div>
-        <div class="mt-2.5 flex items-baseline justify-between gap-1">
-          <span id="kpiInstallments" class="text-2xl sm:text-3xl font-extrabold text-carifi-navy">0</span>
-          <span id="kpiInstallmentsAmount" class="text-[11px] sm:text-xs font-extrabold text-carifi-navy bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">€ 0,00</span>
+        <div class="mt-2 sm:mt-2.5 pl-1 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 min-w-0">
+          <span id="kpiInstallments" class="text-xl sm:text-3xl font-extrabold text-carifi-navy leading-none">0</span>
+          <span id="kpiInstallmentsAmount" class="self-start sm:self-auto text-[10px] sm:text-xs font-extrabold text-carifi-navy bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg truncate max-w-full">€ 0,00</span>
         </div>
       </div>
 
-      <div onclick="setQuickFilter('appuntamento')" class="carifi-card rounded-2xl p-4 sm:p-5 cursor-pointer relative overflow-hidden group">
+      <div onclick="setQuickFilter('appuntamento')" class="carifi-card rounded-2xl p-3 sm:p-5 cursor-pointer relative overflow-hidden group min-w-0">
         <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-600"></div>
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Appuntamenti Studio</span>
-          <span class="p-2 rounded-xl bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition">
+        <div class="flex items-center justify-between gap-1.5 pl-1">
+          <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 leading-tight">Appuntamenti Studio</span>
+          <span class="p-1.5 sm:p-2 rounded-xl bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition shrink-0">
             <i data-lucide="calendar-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </span>
         </div>
-        <div class="mt-2.5 flex items-baseline justify-between gap-1">
-          <span id="kpiAppointments" class="text-2xl sm:text-3xl font-extrabold text-carifi-navy">0</span>
-          <span id="kpiNext7Days" class="text-[11px] text-emerald-700 font-semibold">0 nei prossimi 7gg</span>
+        <div class="mt-2 sm:mt-2.5 pl-1 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-1 min-w-0">
+          <span id="kpiAppointments" class="text-xl sm:text-3xl font-extrabold text-carifi-navy leading-none">0</span>
+          <span id="kpiNext7Days" class="text-[10px] sm:text-[11px] text-emerald-700 font-semibold truncate">0 nei prossimi 7gg</span>
         </div>
       </div>
     </section>
 
     <!-- BARRA DI RICERCA, FILTRI, PERIODO E CAMBIO VISTA -->
-    <section class="carifi-card rounded-2xl p-4 space-y-3 no-print">
+    <section class="carifi-card rounded-2xl p-3.5 sm:p-4 space-y-3 no-print">
       <!-- Riga 1: Tabs Categoria + Switch Vista -->
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5" id="filterTabs">
-          <button data-filter="all" onclick="setQuickFilter('all')" class="filter-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-carifi-navy text-white shadow-xs whitespace-nowrap transition">
+          <button data-filter="all" onclick="setQuickFilter('all')" class="filter-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-carifi-navy text-white shadow-sm whitespace-nowrap transition">
             Tutti gli Attivi
           </button>
           <button data-filter="appuntamento" onclick="setQuickFilter('appuntamento')" class="filter-tab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">
@@ -382,16 +382,16 @@
         </div>
 
         <!-- Selettore Vista (Card / Elenco Compatto / Calendario) -->
-        <div class="inline-flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 self-start lg:self-auto shrink-0">
-          <button data-view="cards" onclick="setViewMode('cards')" class="view-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-carifi-navy shadow-xs transition">
+        <div class="w-full sm:w-auto grid grid-cols-3 sm:inline-flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
+          <button data-view="cards" onclick="setViewMode('cards')" class="view-btn inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-carifi-navy shadow-sm transition">
             <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
             <span>Card</span>
           </button>
-          <button data-view="table" onclick="setViewMode('table')" class="view-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-carifi-navy transition">
+          <button data-view="table" onclick="setViewMode('table')" class="view-btn inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-carifi-navy transition">
             <i data-lucide="list" class="w-3.5 h-3.5"></i>
             <span>Elenco</span>
           </button>
-          <button data-view="calendar" onclick="setViewMode('calendar')" class="view-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-carifi-navy transition">
+          <button data-view="calendar" onclick="setViewMode('calendar')" class="view-btn inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-carifi-navy transition">
             <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i>
             <span>Calendario</span>
           </button>
@@ -400,7 +400,7 @@
 
       <!-- Riga 2: Ricerca, Periodo, Ordinamento e Azioni Rapide -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-2.5 pt-2 border-t border-slate-100">
-        <div class="relative flex-1">
+        <div class="relative flex-1 min-w-0">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
           <input
             type="text"
@@ -414,12 +414,12 @@
           </button>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <select id="clientFilter" onchange="resetPaginationAndRender()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 text-carifi-navy font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy max-w-[210px]">
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+          <select id="clientFilter" onchange="resetPaginationAndRender()" class="col-span-2 sm:col-span-1 w-full sm:w-auto min-w-0 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 text-carifi-navy font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy sm:max-w-[210px]">
             <option value="all">Cliente: Tutti</option>
           </select>
 
-          <select id="periodFilter" onchange="resetPaginationAndRender()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 text-slate-700 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy">
+          <select id="periodFilter" onchange="resetPaginationAndRender()" class="w-full sm:w-auto min-w-0 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 text-slate-700 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy">
             <option value="all">Periodo: Tutti</option>
             <option value="today">Solo Oggi</option>
             <option value="week">Prossimi 7 giorni</option>
@@ -428,7 +428,7 @@
             <option value="overdue">Solo Scaduti</option>
           </select>
 
-          <select id="sortSelect" onchange="resetPaginationAndRender()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 text-slate-700 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy">
+          <select id="sortSelect" onchange="resetPaginationAndRender()" class="w-full sm:w-auto min-w-0 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 text-slate-700 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-carifi-navy">
             <option value="due_asc">Ordina: Scadenza più vicina</option>
             <option value="due_desc">Ordina: Scadenza più lontana</option>
             <option value="intensity_desc">Ordina: Intensità (Alta → Bassa)</option>
@@ -436,19 +436,21 @@
             <option value="amount_desc">Ordina: Importo decrescente</option>
           </select>
 
-          <button onclick="exportFilteredToExcel()" class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition" title="Esporta vista corrente in Excel (.xlsx)">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Excel</span>
-          </button>
+          <div class="col-span-2 sm:col-span-1 flex items-center justify-end sm:justify-start gap-2">
+            <button onclick="exportFilteredToExcel()" class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition" title="Esporta vista corrente in Excel (.xlsx)">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Excel</span>
+            </button>
 
-          <button onclick="exportAllToICS()" class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition" title="Esporta impegni nel Calendario di iPhone / Mac / Windows (.ics)">
-            <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">.ICS</span>
-          </button>
+            <button onclick="exportAllToICS()" class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition" title="Esporta impegni nel Calendario di iPhone / Mac / Windows (.ics)">
+              <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
+              <span>.ICS</span>
+            </button>
 
-          <button onclick="window.print()" class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition" title="Stampa agenda corrente">
-            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-          </button>
+            <button onclick="window.print()" class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition" title="Stampa agenda corrente">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -504,8 +506,8 @@
       </div>
 
       <!-- Stato Vuoto Elegante con Stemma Studio Carifi -->
-      <div id="emptyState" class="hidden carifi-card rounded-3xl p-10 sm:p-14 text-center my-2 relative overflow-hidden">
-        <div class="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-5 shadow-md border-2 border-carifi-crimson/40 bg-carifi-navy flex items-center justify-center">
+      <div id="emptyState" class="hidden carifi-card rounded-3xl p-8 sm:p-14 text-center my-2 relative overflow-hidden">
+        <div class="carifi-logo-empty w-18 h-18 rounded-2xl overflow-hidden mx-auto mb-5 shadow-md border-2 border-carifi-crimson/40 bg-carifi-navy flex items-center justify-center">
           <img src="./logo.jpg" alt="Studio Carifi" class="w-full h-full object-cover scale-110" />
         </div>
         <h3 id="emptyStateTitle" class="font-carifi-serif text-lg sm:text-xl font-bold text-carifi-navy tracking-wide">
@@ -533,33 +535,35 @@
 
   </main>
 
-  <!-- BARRA DI NAVIGAZIONE INFERIORE PER MOBILE (iOS / iPhone Style) -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 carifi-header-gradient text-slate-300 border-t border-carifi-crimson/40 z-30 px-2 py-1.5 flex items-center justify-around no-print shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.35rem);">
-    <button onclick="setViewMode('cards'); setQuickFilter('all')" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg text-white">
-      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold">Agenda</span>
+  <!-- BARRA DI NAVIGAZIONE INFERIORE PER MOBILE (iOS / iPhone Style - Griglia 5 Colonne Anti-Sovrapposizione) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 carifi-header-gradient text-slate-300 border-t border-carifi-crimson/40 z-40 px-1 pt-1.5 grid grid-cols-5 items-end no-print shadow-2xl" style="padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.35rem);">
+    <button onclick="setViewMode('cards'); setQuickFilter('all')" class="flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-lg text-white min-w-0">
+      <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
+      <span class="text-[10px] font-semibold leading-tight truncate max-w-full">Agenda</span>
     </button>
-    <button onclick="setViewMode('calendar')" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg hover:text-white">
-      <i data-lucide="calendar-days" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">Calendario</span>
+    <button onclick="setViewMode('calendar')" class="flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-lg hover:text-white min-w-0">
+      <i data-lucide="calendar-days" class="w-5 h-5 shrink-0"></i>
+      <span class="text-[10px] font-medium leading-tight truncate max-w-full">Calendario</span>
     </button>
-    <button onclick="openItemModal()" class="btn-carifi-crimson flex flex-col items-center justify-center -mt-6 w-13 h-13 p-3 rounded-full text-white shadow-xl border-2 border-white/90">
-      <i data-lucide="plus" class="w-6 h-6"></i>
+    <div class="flex justify-center">
+      <button onclick="openItemModal()" class="btn-carifi-crimson mobile-fab-btn w-12 h-12 -mt-5 flex items-center justify-center rounded-full text-white shadow-xl border-2 border-white/90" aria-label="Nuovo Impegno">
+        <i data-lucide="plus" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <button onclick="openExcelImportModal()" class="flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-lg hover:text-white min-w-0">
+      <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-300 shrink-0"></i>
+      <span class="text-[10px] font-medium leading-tight truncate max-w-full">Excel</span>
     </button>
-    <button onclick="openExcelImportModal()" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg hover:text-white">
-      <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-300"></i>
-      <span class="text-[10px] font-medium">Excel</span>
-    </button>
-    <button onclick="openSettingsModal()" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg hover:text-white">
-      <i data-lucide="bell-ring" class="w-5 h-5 text-red-300"></i>
-      <span class="text-[10px] font-medium">Notifiche</span>
+    <button onclick="openSettingsModal()" class="flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-lg hover:text-white min-w-0">
+      <i data-lucide="bell-ring" class="w-5 h-5 text-red-300 shrink-0"></i>
+      <span class="text-[10px] font-medium leading-tight truncate max-w-full">Notifiche</span>
     </button>
   </nav>
 
   <!-- ========================================================================
        MODALE 1: CREA / MODIFICA APPUNTAMENTO O RATEIZZO
   ========================================================================= -->
-  <div id="itemModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="itemModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-sm z-[60] hidden items-center justify-center p-3 pb-20 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
 
       <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between shrink-0 border-b-2 border-carifi-crimson">
@@ -780,7 +784,7 @@
   <!-- ========================================================================
        MODALE 2: GENERATORE AUTOMATICO PIANO RATEIZZI
   ========================================================================= -->
-  <div id="planModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="planModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-sm z-[60] hidden items-center justify-center p-3 pb-20 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto">
       <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between border-b-2 border-carifi-crimson">
         <div class="flex items-center gap-3">
@@ -863,7 +867,7 @@
   <!-- ========================================================================
        MODALE 3: CENTRO NOTIFICHE ISTANTANEE (iOS & PC) & SINCRONIZZAZIONE
   ========================================================================= -->
-  <div id="settingsModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="settingsModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-sm z-[60] hidden items-center justify-center p-3 pb-20 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
 
       <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between shrink-0 border-b-2 border-carifi-crimson">
@@ -1110,7 +1114,7 @@
   <!-- ========================================================================
        MODALE 4: IMPORTATORE EXCEL / CSV INTELLIGENTE (630+ RIGHE)
   ========================================================================= -->
-  <div id="excelImportModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="excelImportModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-sm z-[60] hidden items-center justify-center p-3 pb-20 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
 
       <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between shrink-0 border-b-2 border-carifi-crimson">
@@ -1264,7 +1268,7 @@
   <!-- ========================================================================
        MODALE 5: GESTORE ROUTINE DI NOTIFICHE (CREA / MODIFICA / PREDEFINITA)
   ========================================================================= -->
-  <div id="routineModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="routineModal" class="fixed inset-0 bg-carifi-navyDark/75 backdrop-blur-sm z-[60] hidden items-center justify-center p-3 pb-20 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
 
       <div class="carifi-header-gradient text-white px-5 py-4 flex items-center justify-between shrink-0 border-b-2 border-carifi-crimson">

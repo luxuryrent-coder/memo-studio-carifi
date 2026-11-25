@@ -879,17 +879,17 @@ function setSyncStatusUI(state) {
   const modalBadge = document.getElementById('cloudModalBadge');
 
   if (state === 'connected') {
-    if (statusBadge) statusBadge.textContent = 'Cloud E2EE Attivo (PC ↔ iOS)';
+    if (statusBadge) statusBadge.textContent = 'Cloud E2EE';
     if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
     if (modalBadge) {
       modalBadge.textContent = 'Connesso • Cifrato E2EE';
       modalBadge.className = 'px-3 py-0.5 rounded-full text-xs font-extrabold bg-emerald-600 text-white';
     }
   } else if (state === 'connecting') {
-    if (statusBadge) statusBadge.textContent = 'Connessione Cloud E2EE...';
+    if (statusBadge) statusBadge.textContent = 'Connessione...';
     if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
   } else {
-    if (statusBadge) statusBadge.textContent = 'Riconnessione Cloud...';
+    if (statusBadge) statusBadge.textContent = 'Riconnessione...';
     if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-amber-400';
   }
 }
@@ -2237,7 +2237,7 @@ function setQuickFilter(filter) {
   visibleLimit = 30;
   document.querySelectorAll('.filter-tab').forEach((btn) => {
     if (btn.dataset.filter === filter) {
-      btn.className = 'filter-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-carifi-navy text-white shadow-xs whitespace-nowrap transition';
+      btn.className = 'filter-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-carifi-navy text-white shadow-sm whitespace-nowrap transition';
     } else {
       btn.className = 'filter-tab px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition';
     }
@@ -2249,9 +2249,9 @@ function setViewMode(mode) {
   currentViewMode = mode;
   document.querySelectorAll('.view-btn').forEach((btn) => {
     if (btn.dataset.view === mode) {
-      btn.className = 'view-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-carifi-navy shadow-xs transition';
+      btn.className = 'view-btn inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-carifi-navy shadow-sm transition';
     } else {
-      btn.className = 'view-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-carifi-navy transition';
+      btn.className = 'view-btn inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-carifi-navy transition';
     }
   });
 
@@ -2457,7 +2457,7 @@ function renderItemCardHtml(item, nowMs) {
   const countdownText = getRelativeTimeLabel(dueMs, nowMs, item.completed);
 
   return `
-    <article id="item-${item.id}" class="carifi-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden ${
+    <article id="item-${item.id}" class="carifi-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden min-w-0 ${
       isAlarmRinging && item.intensity === 'high'
         ? 'urgent-card-active border-2 border-carifi-crimson bg-red-50/15'
         : isOverdue
@@ -2468,21 +2468,21 @@ function renderItemCardHtml(item, nowMs) {
         item.intensity === 'high' ? 'bg-carifi-crimson' : 'bg-carifi-navy'
       }"></div>
 
-      <div class="pl-2">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div class="flex flex-wrap items-center gap-1.5">
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${categoryMeta.classes}">
+      <div class="pl-2 min-w-0">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5 sm:mb-3 min-w-0">
+          <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+            <span class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-[11px] sm:text-xs font-bold ${categoryMeta.classes}">
               ${categoryMeta.label}
             </span>
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${intensityMeta.classes}">
+            <span class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-[11px] sm:text-xs font-bold ${intensityMeta.classes} max-w-full truncate">
               ${intensityMeta.label}
             </span>
           </div>
 
           ${
             item.amount
-              ? `<div class="text-right">
-                   <span class="text-base font-extrabold text-carifi-navy bg-slate-100 px-3 py-1 rounded-xl border border-slate-200">
+              ? `<div class="text-right shrink-0">
+                   <span class="text-sm sm:text-base font-extrabold text-carifi-navy bg-slate-100 px-2.5 sm:px-3 py-1 rounded-xl border border-slate-200 inline-block">
                      € ${Number(item.amount).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                    </span>
                  </div>`
@@ -2490,30 +2490,30 @@ function renderItemCardHtml(item, nowMs) {
           }
         </div>
 
-        <div class="space-y-1">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-extrabold uppercase tracking-wider text-carifi-crimson">
+        <div class="space-y-1 min-w-0">
+          <div class="flex flex-wrap items-center justify-between gap-1.5 min-w-0">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-carifi-crimson break-words min-w-0">
               ${escapeHtml(item.client)}
             </span>
             ${
               item.installmentRef
-                ? `<span class="text-xs font-semibold text-carifi-navy bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">
+                ? `<span class="text-[11px] sm:text-xs font-semibold text-carifi-navy bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 shrink-0 max-w-full truncate">
                      ${escapeHtml(item.installmentRef)}
                    </span>`
                 : ''
             }
           </div>
-          <h3 class="text-base font-bold text-carifi-navy leading-snug ${item.completed ? 'line-through text-slate-400' : ''}">
+          <h3 class="text-sm sm:text-base font-bold text-carifi-navy leading-snug break-words ${item.completed ? 'line-through text-slate-400' : ''}">
             ${escapeHtml(item.title)}
           </h3>
         </div>
 
-        <div class="mt-3.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div class="flex items-center gap-2.5">
-            <i data-lucide="calendar-clock" class="w-4 h-4 ${isOverdue ? 'text-carifi-crimson' : 'text-carifi-navy'} shrink-0"></i>
-            <div>
+        <div class="mt-3 p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs min-w-0">
+          <div class="flex items-start gap-2 min-w-0">
+            <i data-lucide="calendar-clock" class="w-4 h-4 mt-0.5 ${isOverdue ? 'text-carifi-crimson' : 'text-carifi-navy'} shrink-0"></i>
+            <div class="min-w-0">
               <span class="text-[11px] text-slate-500 block">Data e Ora:</span>
-              <span class="font-bold ${isOverdue ? 'text-carifi-crimson' : 'text-carifi-navy'}">
+              <span class="font-bold ${isOverdue ? 'text-carifi-crimson' : 'text-carifi-navy'} break-words">
                 ${formatDateTimeIT(item.dueDate)}
               </span>
               <span class="block text-[11px] font-semibold ${isOverdue ? 'text-carifi-crimson' : 'text-slate-600'}">
@@ -2522,14 +2522,14 @@ function renderItemCardHtml(item, nowMs) {
             </div>
           </div>
 
-          <div class="flex items-center gap-2.5">
-            <i data-lucide="bell-ring" class="w-4 h-4 ${isAlarmRinging ? 'text-carifi-crimson animate-bell' : 'text-carifi-navy'} shrink-0"></i>
-            <div>
+          <div class="flex items-start gap-2 min-w-0">
+            <i data-lucide="bell-ring" class="w-4 h-4 mt-0.5 ${isAlarmRinging ? 'text-carifi-crimson animate-bell' : 'text-carifi-navy'} shrink-0"></i>
+            <div class="min-w-0">
               <span class="text-[11px] text-slate-500 block">${routine ? 'Prossimo Avviso (Routine):' : 'Inizio Avvisi:'}</span>
-              <span class="font-semibold text-carifi-navy">
+              <span class="font-semibold text-carifi-navy break-words">
                 ${formatDateTimeIT(displayNotifyIso)}
               </span>
-              <span class="block text-[11px] ${item.acknowledged ? 'text-emerald-700 font-semibold' : 'text-slate-500'}">
+              <span class="block text-[11px] break-words ${item.acknowledged ? 'text-emerald-700 font-semibold' : 'text-slate-500'}">
                 ${
                   item.completed
                     ? '✅ Pratica Conclusa'
@@ -2548,28 +2548,28 @@ function renderItemCardHtml(item, nowMs) {
 
         ${
           item.notes
-            ? `<p class="mt-3 text-xs text-slate-600 bg-slate-50 border-l-2 border-carifi-crimson pl-3 py-1.5 rounded-r-lg">
+            ? `<p class="mt-3 text-xs text-slate-600 bg-slate-50 border-l-2 border-carifi-crimson pl-3 py-1.5 rounded-r-lg break-words">
                  ${escapeHtml(item.notes)}
                </p>`
             : ''
         }
       </div>
 
-      <div class="mt-4 pt-3 pl-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 no-print">
+      <div class="mt-3.5 pt-3 pl-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 no-print min-w-0">
         <div class="flex flex-wrap items-center gap-1.5">
           ${
             isAlarmRinging && !item.acknowledged
-              ? `<button onclick="acknowledgeItem('${item.id}')" class="btn-carifi-crimson inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold">
+              ? `<button onclick="acknowledgeItem('${item.id}')" class="btn-carifi-crimson inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold shrink-0">
                    <i data-lucide="bell-off" class="w-3.5 h-3.5"></i>
                    <span>Conferma</span>
                  </button>
-                 <button onclick="snoozeItem('${item.id}', 15)" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-100 hover:bg-amber-200 text-amber-900 transition">
+                 <button onclick="snoozeItem('${item.id}', 15)" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-100 hover:bg-amber-200 text-amber-900 transition shrink-0">
                    <span>+15m</span>
                  </button>`
               : ''
           }
 
-          <button onclick="toggleCompleteItem('${item.id}')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold ${
+          <button onclick="toggleCompleteItem('${item.id}')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 ${
             item.completed
               ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
               : 'btn-carifi-navy text-white'
@@ -2580,7 +2580,7 @@ function renderItemCardHtml(item, nowMs) {
 
           ${
             ['rateizzo', 'rottamazione', 'f24'].includes(item.category)
-              ? `<button onclick="duplicateNextInstallment('${item.id}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition" title="Crea la rata del mese successivo">
+              ? `<button onclick="duplicateNextInstallment('${item.id}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-carifi-navy transition shrink-0" title="Crea la rata del mese successivo">
                    <i data-lucide="copy-plus" class="w-3.5 h-3.5"></i>
                    <span>+ Rata</span>
                  </button>`
@@ -2588,7 +2588,7 @@ function renderItemCardHtml(item, nowMs) {
           }
         </div>
 
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-0.5 sm:gap-1 shrink-0">
           <button onclick="exportSingleItemToICS('${item.id}')" class="p-2 rounded-xl text-carifi-navy hover:bg-slate-100 transition" title="Aggiungi al Calendario iPhone / PC (.ics)">
             <i data-lucide="calendar-plus" class="w-4 h-4"></i>
           </button>
