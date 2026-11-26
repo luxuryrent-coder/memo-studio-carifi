@@ -109,12 +109,53 @@ function createDefaultConfig() {
     autoLockMinutes: 10,
     privacyPushMode: false,
     privacyBlurOnHide: true,
+    lastBackupAt: null,
     defaultRoutineId: 'routine-studio-carifi',
     routines: JSON.parse(JSON.stringify(DEFAULT_ROUTINES))
   };
 }
 
 let appConfig = createDefaultConfig();
+
+// Mappa unificazione ragioni sociali / clienti (preserva i dati e unifica eventuali varianti)
+const CLIENT_UNIFICATION_MAP = {
+  'DANILO CAPONE': 'CAPONE DANILO',
+  'CAPONE DANILO': 'CAPONE DANILO',
+  'SICIGNANO IMMACOLATO': 'SICIGNANO IMMACOLATA',
+  'SICIGNANO IMMACOLTA': 'SICIGNANO IMMACOLATA',
+  'AGRICOL SANA': 'AGRICOLA SANA',
+  'MUTLISERVICE': 'MULTISERVICE',
+  'ANIGIA': 'ANIGIA COSTRUZIONI SRLS',
+  'TONIA CARIFI': 'ANTONIA CARIFI',
+  'NIMA': 'NIMA COSTRUZIONI'
+};
+
+function roundMoney(val) {
+  const num = Number(val);
+  if (!Number.isFinite(num)) return 0;
+  return Math.round(num * 100) / 100;
+}
+
+function normalizeClientName(rawName) {
+  const cleaned = String(rawName || '').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return '';
+  return CLIENT_UNIFICATION_MAP[cleaned.toUpperCase()] || cleaned;
+}
+
+function unifyClientNamesInArchive() {
+  const nowIso = new Date().toISOString();
+  const modified = [];
+  for (const it of items) {
+    if (!it || !it.client) continue;
+    const normalized = normalizeClientName(it.client);
+    if (normalized && normalized !== it.client) {
+      it.client = normalized;
+      it.updatedAt = nowIso;
+      modified.push(it);
+    }
+  }
+  return modified;
+}
 
 // ============================================================================
 // MOTORE CRITTOGRAFICO ZERO-KNOWLEDGE (WEB CRYPTO API: AES-256-GCM + PBKDF2)
@@ -408,10 +449,13 @@ async function attemptPinUnlock(pin) {
     deletedIds = decryptedDeleted;
     items = decryptedItems.filter((it) => it && it.id && !deletedIds[it.id]);
 
+    // Unifica automaticamente eventuali varianti nomi cliente (es. Danilo Capone -> CAPONE DANILO)
+    const unifiedOnBoot = unifyClientNamesInArchive();
+
     updatePinDotsUI('success');
     setPinStatusMessage('Accesso autorizzato • Archivio decifrato', true);
 
-    if (needsInitialPersist) {
+    if (needsInitialPersist || unifiedOnBoot.length > 0) {
       await persistEncryptedVault(false);
     }
 
@@ -423,6 +467,10 @@ async function attemptPinUnlock(pin) {
       document.getElementById('appShell')?.classList.remove('hidden');
       document.body.classList.remove('privacy-blur-active');
       bootstrapUnlockedApp();
+      if (unifiedOnBoot.length > 0) {
+        syncItemsInBatches(unifiedOnBoot);
+        showToast(`Unificate ${unifiedOnBoot.length} voci cliente (es. CAPONE DANILO)!`, 'info');
+      }
     }, 220);
   } catch (err) {
     // Codice errato (fallimento autenticazione AES-GCM)
@@ -1043,6 +1091,9 @@ function upsertIncomingItem(incoming) {
   if (deletedIds[incoming.id] && new Date(deletedIds[incoming.id]) >= new Date(incoming.updatedAt || 0)) {
     return false;
   }
+  if (incoming.client) {
+    incoming.client = normalizeClientName(incoming.client);
+  }
 
   const idx = items.findIndex((i) => i.id === incoming.id);
   if (idx === -1) {
@@ -1103,9 +1154,13 @@ async function syncItemsInBatches(itemsList) {
       client: item.client,
       title: item.title,
       amount: item.amount,
+      principalAmount: item.principalAmount ?? null,
+      interestAmount: item.interestAmount ?? null,
       installmentRef: item.installmentRef,
       phone: item.phone,
       dueDate: item.dueDate,
+      routineId: item.routineId || null,
+      customFirstAlertAt: item.customFirstAlertAt || null,
       leadMinutes: item.leadMinutes,
       notifyStartAt: item.notifyStartAt,
       preAlerts: item.preAlerts,
@@ -2801,6 +2856,120 @@ function populateRoutineDropdown(selectId, selectedId = null, includeManual = fa
 }
 
 // ============================================================================
+// SELETTORE RAGIONE SOCIALE / CLIENTE (ESISTENTI + CREAZIONE NUOVA)
+// ============================================================================
+function getDistinctClientNames() {
+  const set = new Set();
+  for (const it of items) {
+    const c = normalizeClientName(it?.client);
+    if (!c || c === 'CONTRATTO DI LOCAZIONE') continue;
+    set.add(c);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, 'it'));
+}
+
+function populateClientSelect(prefix, selectedClient = '') {
+  const selectEl = document.getElementById(`${prefix}ClientSelect`);
+  const wrapperEl = document.getElementById(`${prefix}ClientNewWrapper`);
+  const inputEl = document.getElementById(`${prefix}Client`);
+  if (!selectEl) return;
+
+  const normalizedSelected = normalizeClientName(selectedClient);
+  const clientsList = getDistinctClientNames();
+
+  let html = `<option value="">-- Seleziona cliente / ragione sociale --</option>`;
+  html += `<option value="__new__">➕ Crea nuova ragione sociale / cliente...</option>`;
+  if (clientsList.length > 0) {
+    html += `<optgroup label="Ragioni Sociali Esistenti (${clientsList.length})">`;
+    html += clientsList.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    html += `</optgroup>`;
+  }
+  selectEl.innerHTML = html;
+
+  if (normalizedSelected && clientsList.includes(normalizedSelected)) {
+    selectEl.value = normalizedSelected;
+    if (wrapperEl) wrapperEl.classList.add('hidden');
+    if (inputEl) {
+      inputEl.value = '';
+      inputEl.required = false;
+    }
+  } else if (normalizedSelected) {
+    selectEl.value = '__new__';
+    if (wrapperEl) wrapperEl.classList.remove('hidden');
+    if (inputEl) {
+      inputEl.value = normalizedSelected;
+      inputEl.required = true;
+    }
+  } else {
+    selectEl.value = '';
+    if (wrapperEl) wrapperEl.classList.add('hidden');
+    if (inputEl) {
+      inputEl.value = '';
+      inputEl.required = false;
+    }
+  }
+}
+
+function handleClientSelectChange(prefix) {
+  const selectEl = document.getElementById(`${prefix}ClientSelect`);
+  const wrapperEl = document.getElementById(`${prefix}ClientNewWrapper`);
+  const inputEl = document.getElementById(`${prefix}Client`);
+  if (!selectEl || !wrapperEl || !inputEl) return;
+
+  if (selectEl.value === '__new__') {
+    wrapperEl.classList.remove('hidden');
+    inputEl.required = true;
+    inputEl.focus();
+  } else {
+    wrapperEl.classList.add('hidden');
+    inputEl.required = false;
+    inputEl.value = '';
+  }
+}
+
+function getResolvedClientFromForm(prefix) {
+  const selectEl = document.getElementById(`${prefix}ClientSelect`);
+  const inputEl = document.getElementById(`${prefix}Client`);
+  const val = selectEl?.value || '';
+  if (val === '__new__') {
+    return normalizeClientName(inputEl?.value || '');
+  }
+  return normalizeClientName(val);
+}
+
+// ============================================================================
+// CALCOLO QUOTA CAPITALE + QUOTA INTERESSI (MODALE 1)
+// ============================================================================
+function recalcItemTotalFromSplit() {
+  const pRaw = document.getElementById('itemPrincipal')?.value ?? '';
+  const iRaw = document.getElementById('itemInterest')?.value ?? '';
+  const amountEl = document.getElementById('itemAmount');
+  if (!amountEl) return;
+
+  if (pRaw === '' && iRaw === '') {
+    amountEl.value = '';
+    return;
+  }
+  const total = roundMoney((Number(pRaw) || 0) + (Number(iRaw) || 0));
+  amountEl.value = total.toFixed(2);
+}
+
+function handleDirectAmountInput() {
+  const pEl = document.getElementById('itemPrincipal');
+  const iEl = document.getElementById('itemInterest');
+  const amountVal = document.getElementById('itemAmount')?.value ?? '';
+  if (!pEl || !iEl) return;
+
+  if (pEl.value !== '' || iEl.value !== '') {
+    const splitSum = roundMoney((Number(pEl.value) || 0) + (Number(iEl.value) || 0));
+    if (Math.abs(splitSum - (Number(amountVal) || 0)) > 0.009) {
+      pEl.value = '';
+      iEl.value = '';
+    }
+  }
+}
+
+// ============================================================================
 // MODALE 1: CREA / MODIFICA SINGOLO APPUNTAMENTO O RATEIZZO
 // ============================================================================
 function openItemModal(editId = null) {
@@ -2815,8 +2984,10 @@ function openItemModal(editId = null) {
     titleEl.textContent = 'Modifica Appuntamento / Scadenza';
     document.getElementById('itemId').value = item.id;
     document.getElementById('itemCategory').value = item.category;
-    document.getElementById('itemClient').value = item.client;
+    populateClientSelect('item', item.client);
     document.getElementById('itemTitle').value = item.title;
+    document.getElementById('itemPrincipal').value = item.principalAmount ?? '';
+    document.getElementById('itemInterest').value = item.interestAmount ?? '';
     document.getElementById('itemAmount').value = item.amount ?? '';
     document.getElementById('itemInstallmentRef').value = item.installmentRef || '';
     document.getElementById('itemPhone').value = item.phone || '';
@@ -2848,6 +3019,12 @@ function openItemModal(editId = null) {
   } else {
     titleEl.textContent = 'Nuovo Appuntamento o Scadenza';
     document.getElementById('itemId').value = '';
+    const clientFilterVal = document.getElementById('clientFilter')?.value;
+    populateClientSelect('item', clientFilterVal && clientFilterVal !== 'all' ? clientFilterVal : '');
+    document.getElementById('itemPrincipal').value = '';
+    document.getElementById('itemInterest').value = '';
+    document.getElementById('itemAmount').value = '';
+
     const defaultDue = selectedCalendarDate
       ? new Date(`${selectedCalendarDate}T18:00:00`)
       : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
@@ -3000,10 +3177,22 @@ function saveItemForm(e) {
   e.preventDefault();
   const id = document.getElementById('itemId').value;
   const category = document.getElementById('itemCategory').value;
-  const client = document.getElementById('itemClient').value.trim();
+  const client = getResolvedClientFromForm('item');
+  if (!client) {
+    showToast('Seleziona una ragione sociale o creane una nuova.', 'warning');
+    return;
+  }
   const title = document.getElementById('itemTitle').value.trim();
+  const pRaw = document.getElementById('itemPrincipal')?.value ?? '';
+  const iRaw = document.getElementById('itemInterest')?.value ?? '';
   const amountRaw = document.getElementById('itemAmount').value;
-  const amount = amountRaw !== '' ? Number(amountRaw) : null;
+
+  const principalAmount = pRaw !== '' ? roundMoney(pRaw) : null;
+  const interestAmount = iRaw !== '' ? roundMoney(iRaw) : null;
+  const amount = (principalAmount !== null || interestAmount !== null)
+    ? roundMoney((principalAmount || 0) + (interestAmount || 0))
+    : (amountRaw !== '' ? roundMoney(amountRaw) : null);
+
   const installmentRef = document.getElementById('itemInstallmentRef').value.trim();
   const phone = document.getElementById('itemPhone').value.trim();
   const dueDateLocal = document.getElementById('itemDueDate').value;
@@ -3044,6 +3233,8 @@ function saveItemForm(e) {
     category,
     client,
     title,
+    principalAmount,
+    interestAmount,
     amount,
     installmentRef,
     phone,
@@ -3084,17 +3275,37 @@ function saveItemForm(e) {
 }
 
 // ============================================================================
-// MODALE 2: GENERATORE AUTOMATICO PIANO RATEIZZI
+// MODALE 2: REGISTRAZIONE RAPIDA PIANO RATEIZZI (TABELLA DATE + CAPITALE/INTERESSI)
 // ============================================================================
+function addMonthsSafe(baseYear, baseMonthZero, baseDay, monthsToAdd) {
+  const targetMonthIdx = baseMonthZero + monthsToAdd;
+  const y = baseYear + Math.floor(targetMonthIdx / 12);
+  const m = ((targetMonthIdx % 12) + 12) % 12;
+  const maxDay = new Date(y, m + 1, 0).getDate();
+  const d = Math.min(baseDay, maxDay);
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
 function openInstallmentPlanModal() {
   const modal = document.getElementById('planModal');
   const nextWeek = new Date();
   nextWeek.setDate(nextWeek.getDate() + 7);
-  nextWeek.setHours(18, 0, 0, 0);
-  document.getElementById('planFirstDate').value = toLocalDatetimeInputValue(nextWeek.toISOString());
+
+  const clientFilterVal = document.getElementById('clientFilter')?.value;
+  populateClientSelect('plan', clientFilterVal && clientFilterVal !== 'all' ? clientFilterVal : '');
+
+  document.getElementById('planTitle').value = '';
+  document.getElementById('planCount').value = '6';
+  document.getElementById('planFrequency').value = 'quarterly';
+  document.getElementById('planFirstDate').value = toDateKey(nextWeek);
+  document.getElementById('planBasePrincipal').value = '';
+  document.getElementById('planBaseInterest').value = '';
   populateRoutineDropdown('planRoutineId', appConfig.defaultRoutineId, false);
+
+  rebuildPlanRowsTable(true);
   modal.classList.remove('hidden');
   modal.classList.add('flex');
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function closeInstallmentPlanModal() {
@@ -3103,35 +3314,174 @@ function closeInstallmentPlanModal() {
   modal.classList.remove('flex');
 }
 
+function rebuildPlanRowsTable(resetValues = false) {
+  const tbody = document.getElementById('planRowsTableBody');
+  if (!tbody) return;
+
+  const count = Math.min(120, Math.max(1, Number(document.getElementById('planCount')?.value || 1)));
+  const freq = document.getElementById('planFrequency')?.value || 'quarterly';
+  const firstDateStr = document.getElementById('planFirstDate')?.value || toDateKey(new Date());
+
+  // Preserva eventuali valori già modificati manualmente nelle righe esistenti
+  const prevRows = [];
+  if (!resetValues) {
+    tbody.querySelectorAll('tr').forEach((tr) => {
+      prevRows.push({
+        date: tr.querySelector('.plan-row-date')?.value || '',
+        principal: tr.querySelector('.plan-row-principal')?.value || '',
+        interest: tr.querySelector('.plan-row-interest')?.value || ''
+      });
+    });
+  }
+
+  const parts = firstDateStr.split('-').map(Number);
+  const baseY = parts[0] || new Date().getFullYear();
+  const baseM = (parts[1] || 1) - 1;
+  const baseD = parts[2] || 1;
+  const monthStep = freq === 'quarterly' ? 3 : freq === 'bimonthly' ? 2 : freq === 'monthly' ? 1 : 0;
+
+  const baseP = document.getElementById('planBasePrincipal')?.value ?? '';
+  const baseI = document.getElementById('planBaseInterest')?.value ?? '';
+
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    const prev = prevRows[i] || {};
+    const autoDate = monthStep > 0
+      ? addMonthsSafe(baseY, baseM, baseD, i * monthStep)
+      : (prev.date || firstDateStr);
+    const dateVal = (freq === 'custom' && prev.date) ? prev.date : autoDate;
+    const pVal = prev.principal !== undefined && prev.principal !== '' ? prev.principal : baseP;
+    const iVal = prev.interest !== undefined && prev.interest !== '' ? prev.interest : baseI;
+    const hasNum = pVal !== '' || iVal !== '';
+    const totStr = hasNum
+      ? `€ ${roundMoney((Number(pVal) || 0) + (Number(iVal) || 0)).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : '€ 0,00';
+
+    html += `
+      <tr class="hover:bg-slate-50/70">
+        <td class="px-3 py-1.5 font-extrabold text-carifi-navy whitespace-nowrap">${i + 1}ª</td>
+        <td class="px-2 py-1.5">
+          <input type="date" value="${escapeHtml(dateVal)}" required class="plan-row-date w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-white font-semibold" />
+        </td>
+        <td class="px-2 py-1.5">
+          <input type="number" step="0.01" min="0" value="${escapeHtml(pVal)}" oninput="recalcPlanRowTotal(this)" placeholder="0,00" class="plan-row-principal w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-white" />
+        </td>
+        <td class="px-2 py-1.5">
+          <input type="number" step="0.01" min="0" value="${escapeHtml(iVal)}" oninput="recalcPlanRowTotal(this)" placeholder="0,00" class="plan-row-interest w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-white" />
+        </td>
+        <td class="px-3 py-1.5 text-right font-extrabold text-carifi-navy whitespace-nowrap plan-row-total">${totStr}</td>
+      </tr>
+    `;
+  }
+
+  tbody.innerHTML = html;
+  updatePlanTotalsSummary();
+}
+
+function applyBaseAmountsToPlanRows() {
+  const tbody = document.getElementById('planRowsTableBody');
+  if (!tbody) return;
+  const baseP = document.getElementById('planBasePrincipal')?.value ?? '';
+  const baseI = document.getElementById('planBaseInterest')?.value ?? '';
+
+  tbody.querySelectorAll('tr').forEach((tr) => {
+    const pInp = tr.querySelector('.plan-row-principal');
+    const iInp = tr.querySelector('.plan-row-interest');
+    if (pInp) pInp.value = baseP;
+    if (iInp) iInp.value = baseI;
+    if (pInp) recalcPlanRowTotal(pInp, false);
+  });
+  updatePlanTotalsSummary();
+  showToast('Quota capitale e interessi applicati a tutte le rate!', 'info');
+}
+
+function recalcPlanRowTotal(inputEl, updateSummary = true) {
+  const tr = inputEl?.closest('tr');
+  if (!tr) return;
+  const pVal = Number(tr.querySelector('.plan-row-principal')?.value || 0);
+  const iVal = Number(tr.querySelector('.plan-row-interest')?.value || 0);
+  const tot = roundMoney(pVal + iVal);
+  const totCell = tr.querySelector('.plan-row-total');
+  if (totCell) {
+    totCell.textContent = `€ ${tot.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  if (updateSummary) updatePlanTotalsSummary();
+}
+
+function updatePlanTotalsSummary() {
+  const tbody = document.getElementById('planRowsTableBody');
+  if (!tbody) return;
+  let sumP = 0;
+  let sumI = 0;
+  tbody.querySelectorAll('tr').forEach((tr) => {
+    sumP += Number(tr.querySelector('.plan-row-principal')?.value || 0);
+    sumI += Number(tr.querySelector('.plan-row-interest')?.value || 0);
+  });
+  sumP = roundMoney(sumP);
+  sumI = roundMoney(sumI);
+  const sumTot = roundMoney(sumP + sumI);
+
+  const fmt = (n) => `€ ${n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const elP = document.getElementById('planSummaryPrincipal');
+  const elI = document.getElementById('planSummaryInterest');
+  const elT = document.getElementById('planSummaryTotal');
+  if (elP) elP.textContent = fmt(sumP);
+  if (elI) elI.textContent = fmt(sumI);
+  if (elT) elT.textContent = fmt(sumTot);
+}
+
 function generateInstallmentPlan(e) {
   e.preventDefault();
-  const client = document.getElementById('planClient').value.trim();
+  const client = getResolvedClientFromForm('plan');
+  if (!client) {
+    showToast('Seleziona una ragione sociale o creane una nuova.', 'warning');
+    return;
+  }
   const baseTitle = document.getElementById('planTitle').value.trim();
-  const count = Math.min(120, Math.max(2, Number(document.getElementById('planCount').value || 8)));
-  const freq = document.getElementById('planFrequency').value;
-  const amountVal = document.getElementById('planAmount').value;
-  const amount = amountVal !== '' ? Number(amountVal) : null;
-  const firstDateStr = document.getElementById('planFirstDate').value;
-  const intensity = document.getElementById('planIntensity').value;
+  const intensity = document.getElementById('planIntensity').value || 'high';
   const routineId = document.getElementById('planRoutineId').value || appConfig.defaultRoutineId;
 
-  const firstDate = new Date(firstDateStr);
-  const monthStep = freq === 'quarterly' ? 3 : freq === 'bimonthly' ? 2 : 1;
-  const created = [];
+  const rowEls = [...document.querySelectorAll('#planRowsTableBody tr')];
+  if (rowEls.length === 0) return;
 
-  for (let i = 1; i <= count; i++) {
-    const due = new Date(firstDate);
-    due.setMonth(due.getMonth() + (i - 1) * monthStep);
+  const totalCount = rowEls.length;
+  const created = [];
+  const baseStamp = Date.now();
+
+  rowEls.forEach((tr, idx) => {
+    const i = idx + 1;
+    const dateVal = tr.querySelector('.plan-row-date')?.value;
+    if (!dateVal) return;
+
+    const pRaw = tr.querySelector('.plan-row-principal')?.value ?? '';
+    const iRaw = tr.querySelector('.plan-row-interest')?.value ?? '';
+    const principalAmount = pRaw !== '' ? roundMoney(pRaw) : null;
+    const interestAmount = iRaw !== '' ? roundMoney(iRaw) : null;
+    const amount = (principalAmount !== null || interestAmount !== null)
+      ? roundMoney((principalAmount || 0) + (interestAmount || 0))
+      : null;
+
+    const [y, m, d] = dateVal.split('-').map(Number);
+    const due = new Date(y, m - 1, d, 18, 0, 0, 0);
     const slots = computeRoutineNotificationSlots({ dueDate: due.toISOString(), routineId });
     const notifyStart = slots.length > 0 ? new Date(slots[0].atMs) : new Date(due.getTime() - 7 * 24 * 60 * 60 * 1000);
 
+    const noteParts = [`Piano rateizzo (${totalCount} rate).`];
+    if (principalAmount !== null || interestAmount !== null) {
+      noteParts.push(
+        `Capitale: € ${(principalAmount || 0).toLocaleString('it-IT', { minimumFractionDigits: 2 })} • Interessi: € ${(interestAmount || 0).toLocaleString('it-IT', { minimumFractionDigits: 2 })}`
+      );
+    }
+
     const newItem = {
-      id: `carifi-plan-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 5)}`,
+      id: `carifi-plan-${baseStamp}-${i}-${Math.random().toString(36).substring(2, 5)}`,
       category: 'rateizzo',
       client,
       title: `${baseTitle} (${i}ª Rata)`,
+      principalAmount,
+      interestAmount,
       amount,
-      installmentRef: `Rata ${i} di ${count}`,
+      installmentRef: `Rata ${i} di ${totalCount}`,
       phone: '',
       dueDate: due.toISOString(),
       routineId,
@@ -3149,13 +3499,15 @@ function generateInstallmentPlan(e) {
       completed: false,
       lastNotifiedAt: null,
       snoozedUntil: null,
-      notes: `Piano rateizzo generato automaticamente (${count} rate).`,
+      notes: noteParts.join(' '),
       updatedAt: new Date().toISOString()
     };
 
     items.push(newItem);
     created.push(newItem);
-  }
+  });
+
+  if (created.length === 0) return;
 
   saveItemsLocally();
   syncItemsInBatches(created);
@@ -3163,7 +3515,7 @@ function generateInstallmentPlan(e) {
   closeInstallmentPlanModal();
   renderAll();
   checkAndDispatchNotifications();
-  showToast(`Generato e sincronizzato piano di ${count} rate per ${client}!`, 'success');
+  showToast(`Registrate e sincronizzate ${created.length} rate per ${client}!`, 'success');
 }
 
 // ============================================================================
@@ -3413,6 +3765,7 @@ function openSettingsModal() {
   const roomLabel = document.getElementById('syncRoomLabel');
   if (roomLabel) roomLabel.textContent = 'Canale Sync E2EE: protetto e derivato crittograficamente (AES-256-GCM)';
 
+  updateLastBackupBadgeUI();
   updateDeviceNotificationUI();
   updatePushLinksUI();
 
@@ -3700,17 +4053,8 @@ function parseExcelRowToItem(row, mapping, defaults) {
   const parsedDate = parseFlexibleDateAndTime(rawDate, rawTime);
   if (!parsedDate) return null;
 
-  const EXCEL_CLIENT_NORMALIZE = {
-    'SICIGNANO IMMACOLATO': 'SICIGNANO IMMACOLATA',
-    'SICIGNANO IMMACOLTA': 'SICIGNANO IMMACOLATA',
-    'AGRICOL SANA': 'AGRICOLA SANA',
-    'MUTLISERVICE': 'MULTISERVICE',
-    'ANIGIA': 'ANIGIA COSTRUZIONI SRLS',
-    'TONIA CARIFI': 'ANTONIA CARIFI',
-    'NIMA': 'NIMA COSTRUZIONI'
-  };
   const isContractRow = rawCat === 'scadenza' || /contratto\s+di\s+locazione|scadenza\s+contratto/i.test(rawClient);
-  const normalizedClient = EXCEL_CLIENT_NORMALIZE[rawClient.toUpperCase()] || rawClient;
+  const normalizedClient = normalizeClientName(rawClient);
   const client = isContractRow ? 'CONTRATTO DI LOCAZIONE' : (normalizedClient || rawTitle || 'Cliente Studio');
   const title = isContractRow
     ? rawClient
@@ -3987,7 +4331,9 @@ function exportItemsListToExcel(list, filePrefix) {
       Cliente: it.client,
       Oggetto: it.title,
       Tipologia: it.category,
-      Importo: it.amount ?? '',
+      'Quota Capitale': it.principalAmount ?? '',
+      'Quota Interessi': it.interestAmount ?? '',
+      'Importo Totale': it.amount ?? '',
       'Rif. Rata': it.installmentRef || '',
       Telefono: it.phone || '',
       Intensità: getIntensityLabel(it.intensity),
@@ -4012,34 +4358,118 @@ function exportAllToExcel() {
 }
 
 // ============================================================================
-// BACKUP JSON & SVUOTAMENTO AGENDA
+// BACKUP LOCALE COMPLETO (.JSON) & RIPRISTINO SU ALTRO PC
 // ============================================================================
+function updateLastBackupBadgeUI() {
+  const badge = document.getElementById('lastBackupBadge');
+  if (!badge) return;
+  if (appConfig.lastBackupAt) {
+    badge.textContent = `Ultimo backup: ${formatDateTimeIT(appConfig.lastBackupAt)}`;
+    badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+  } else {
+    badge.textContent = 'Nessun backup salvato';
+    badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white text-slate-600 border border-amber-300';
+  }
+}
+
 function exportDataJson() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
+
+  const backupBundle = {
+    app: 'MEMO_STUDIO_CARIFI_BACKUP',
+    version: 4,
+    exportedAt: now.toISOString(),
+    totalItems: items.length,
+    items,
+    deletedIds,
+    routines: appConfig.routines,
+    defaultRoutineId: appConfig.defaultRoutineId
+  };
+
   downloadFile(
-    JSON.stringify(items, null, 2),
-    `backup_studio_carifi_${new Date().toISOString().slice(0, 10)}.json`,
+    JSON.stringify(backupBundle, null, 2),
+    `backup_memo_studio_carifi_${stamp}.json`,
     'application/json'
   );
-  showToast(`Backup JSON esportato (${items.length} record).`, 'success');
+
+  appConfig.lastBackupAt = now.toISOString();
+  saveConfig();
+  updateLastBackupBadgeUI();
+  showToast(`Backup locale completo salvato (${items.length} impegni + routine)!`, 'success');
 }
 
 function importDataJson(event) {
   const file = event.target.files?.[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try {
-      const imported = JSON.parse(e.target.result);
-      if (Array.isArray(imported)) {
-        items = imported;
-        saveItemsLocally();
-        syncItemsInBatches(items);
-        scheduleUpcomingDirectPushes();
-        renderAll();
-        showToast(`Ripristinati ${imported.length} impegni dal backup JSON!`, 'success');
+      const parsed = JSON.parse(e.target.result);
+      let importedItems = null;
+      let importedDeleted = null;
+      let importedRoutines = null;
+      let importedDefaultRoutineId = null;
+      let backupDateLabel = '';
+
+      if (Array.isArray(parsed)) {
+        importedItems = parsed;
+      } else if (parsed && Array.isArray(parsed.items)) {
+        importedItems = parsed.items;
+        if (parsed.deletedIds && typeof parsed.deletedIds === 'object') {
+          importedDeleted = parsed.deletedIds;
+        }
+        if (Array.isArray(parsed.routines) && parsed.routines.length > 0) {
+          importedRoutines = parsed.routines;
+          importedDefaultRoutineId = parsed.defaultRoutineId || parsed.routines[0].id;
+        }
+        if (parsed.exportedAt) {
+          backupDateLabel = ` del ${formatDateTimeIT(parsed.exportedAt)}`;
+        }
       }
-    } catch (_) {
-      showToast('File JSON non valido.', 'error');
+
+      if (!importedItems) {
+        showToast('File di backup non riconosciuto.', 'error');
+        return;
+      }
+
+      if (!confirm(`Ripristinare il backup${backupDateLabel} con ${importedItems.length} impegni? I dati correnti verranno sostituiti e sincronizzati.`)) {
+        return;
+      }
+
+      const nowIso = new Date().toISOString();
+      items = importedItems.map((it) => ({
+        ...it,
+        client: normalizeClientName(it.client || ''),
+        updatedAt: nowIso
+      }));
+      if (importedDeleted) {
+        deletedIds = importedDeleted;
+      } else {
+        deletedIds = {};
+      }
+      if (importedRoutines) {
+        appConfig.routines = importedRoutines;
+        appConfig.defaultRoutineId = importedDefaultRoutineId;
+        await sendCloudDelta({
+          op: 'SYNC_ROUTINES',
+          routines: appConfig.routines,
+          defaultRoutineId: appConfig.defaultRoutineId
+        });
+      }
+
+      saveItemsLocally();
+      await sendCloudDelta({ op: 'CLEAR_ALL', clearedAllAt: new Date(Date.now() - 1000).toISOString() });
+      syncItemsInBatches(items);
+      scheduleUpcomingDirectPushes();
+      renderAll();
+      checkAndDispatchNotifications();
+      closeSettingsModal();
+      showToast(`Ripristinati ${items.length} impegni dal backup locale!`, 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('File JSON di backup non valido o danneggiato.', 'error');
     }
   };
   reader.readAsText(file);
